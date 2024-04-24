@@ -8,7 +8,8 @@
     "default_icon": "192.png"
   },
   "permissions": [
-    "proxy"
+    "proxy",
+    "storage"
   ],
   "host_permissions": [
     "*://*.vpn.cocomine.cc/*",
