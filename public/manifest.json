@@ -11,10 +11,20 @@
     "proxy"
   ],
   "host_permissions": [
-    "*://*.vpn.cocomine.cc/*"
+    "*://*.vpn.cocomine.cc/*",
+    "http://localhost:3000/*"
   ],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
-  }
+  },
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "matches": [
+        "*://*.vpn.cocomine.cc/*",
+        "http://localhost:3000/*"
+      ]
+    }
+  ]
 }
