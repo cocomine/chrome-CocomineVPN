@@ -1,0 +1,71 @@
+@import "~bootstrap/scss/bootstrap";
+
+$bootstrap-icons-font-dir: "~bootstrap-icons/font/fonts";
+@import "~bootstrap-icons/font/bootstrap-icons";
+
+html {
+    width: 300px;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#App{
+    padding: 1.2rem;
+    border-radius: 10px;
+    border: 5px solid white;
+    background-color: lightgreen;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.link-status {
+    background-color: gray;
+    border-radius: 50%;
+    width: 5rem;
+    height: 5rem;
+    color: white;
+    overflow: hidden;
+
+    svg {
+        padding: 1rem;
+        width: 100%;
+        height: 100%;
+    }
+
+    &[data-connected="true"] {
+        animation: float 1s infinite alternate;
+    }
+    
+    @keyframes float {
+        0%{
+            box-shadow: rgba(255, 255, 255, 0.6) 0 0 0;
+        }
+        100%{
+            box-shadow: rgba(255, 255, 255, 0.6) 0 0 0 15px;
+        }
+    }
+}
+
+.flag {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+
+    &.fit-left {
+        object-position: left;
+    }
+
+    &.fit-right {
+        object-position: right;
+    }
+}
