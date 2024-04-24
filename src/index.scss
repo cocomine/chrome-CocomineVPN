@@ -10,7 +10,7 @@ html {
 body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',$bootstrap-icons-font-dir,
     sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -19,8 +19,8 @@ body {
 #App{
     padding: 1.2rem;
     border-radius: 10px;
-    border: 5px solid white;
-    background-color: lightgreen;
+    border: 5px solid $body-bg-dark;
+    background-color: $body-secondary-bg-dark;
 }
 
 code {
@@ -35,6 +35,9 @@ code {
     height: 5rem;
     color: white;
     overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.3s;
+    position: relative;
 
     svg {
         padding: 1rem;
@@ -42,8 +45,43 @@ code {
         height: 100%;
     }
 
+    &::before{
+        transition: opacity 0.3s;
+        opacity: 0;
+        font-family: 'Bootstrap-icons', sans-serif;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        font-size: 2.5rem;
+        background-repeat: no-repeat;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+    }
+
+    &:hover{
+        box-shadow: rgba(255, 255, 255, 0.6) 0 0 0 15px;
+        animation: none !important;
+        &::before{
+            opacity: 1 !important;
+        }
+    }
+
+
+    &[data-connected="false"] {
+        &::before{
+            padding: 0.5rem 1.3rem;
+            content: "\F1C5";
+        }
+    }
+
     &[data-connected="true"] {
-        animation: float 1s infinite alternate;
+        animation: float 1s infinite alternate both;
+        &::before{
+            padding: 0.4rem 1.3rem;
+            content: url("assets/dislink.svg");
+        }
     }
     
     @keyframes float {

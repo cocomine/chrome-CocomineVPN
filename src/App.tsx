@@ -1,11 +1,12 @@
 import {Button, Col, Row} from "react-bootstrap";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import moment from "moment";
 import tw_flag from "./assets/tw.svg";
 import jp_flag from "./assets/jp.svg";
 import us_flag from "./assets/us.svg";
 import hk_flag from "./assets/hk.svg";
 import uk_flag from "./assets/uk.svg";
+import dislink from "./assets/dislink.svg";
 import {APP_VERSION} from "./index";
 
 type countryType = "TW" | "JP" | "US" | "HK" | "UK" | string
@@ -23,7 +24,7 @@ function App() {
                     </Col>
                 </Row>
             </div>
-            <Row className="justify-content-between" style={{fontSize: "0.8em"}}>
+            <Row className="justify-content-between" style={{fontSize: "0.7em", padding: "5px"}}>
                 <Col xs="auto">
                             <span>Build by © {moment().format("yyyy")} <a
                                 href="https://github.com/cocomine" target="_blank"
@@ -32,7 +33,7 @@ function App() {
                     <span className="text-muted">{APP_VERSION}</span>
                 </Col>
                 <Col xs="auto">
-                    <Button variant="link" href="https://github.com/cocomine/cocomine_vpnapi_ui" target="_blank"
+                    <Button variant="link" href="https://github.com/cocomine/chrome-vpn" target="_blank"
                             rel="noopener noreferrer">
                         <i className="bi bi-github me-2"></i>
                     </Button>
@@ -43,8 +44,25 @@ function App() {
 }
 
 const LinkStatus: React.FC<{}> = () => {
-    const [connected, setConnected] = useState(true);
-    const [country, setCountry] = useState<countryType | null>("HK");
+    const [connected, setConnected] = useState(false);
+    const [country, setCountry] = useState<countryType | null>(null);
+    const [msg, setMsg] = useState<string | null>('未連線');
+
+    /**
+     * The `extracted` function is used to fetch the current proxy settings and update the state variables accordingly.
+     * It uses the `getProxyData` Promise to fetch the proxy settings.
+     */
+    function extracted() {
+        getProxyData.then(({connected, country}) => {
+            setConnected(connected)
+            setCountry(country)
+            setMsg(connected ? "已連接" + country + "節點" : "未連線")
+        }).catch(() => {
+            setConnected(false)
+            setCountry(null)
+            setMsg("未連線")
+        })
+    }
 
     // flag image element for menu item (memoized) (only update when data._country is changed)
     const flag = useMemo(() => {
@@ -60,39 +78,53 @@ const LinkStatus: React.FC<{}> = () => {
             case "UK":
                 return <img src={uk_flag} alt="UK Flag" className="flag" draggable={false}/>;
             default:
-                return <svg xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 640 512">
-                    <path fill={"currentColor"}
-                          d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L489.3 358.2l90.5-90.5c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114l-96 96-31.9-25C430.9 239.6 420.1 175.1 377 132c-52.2-52.3-134.5-56.2-191.3-11.7L38.8 5.1zM239 162c30.1-14.9 67.7-9.9 92.8 15.3c20 20 27.5 48.3 21.7 74.5L239 162zM116.6 187.9L60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5l61.8-61.8-50.6-39.9zM220.9 270c-2.1 39.8 12.2 80.1 42.2 110c38.9 38.9 94.4 51 143.6 36.3L220.9 270z"/>
-                </svg>;
+                return <img src={dislink} alt="Disconnect" className="flag"
+                            style={{padding: "1.5rem", overflow: 'visible'}} draggable={false}/>;
         }
     }, [country]);
 
+    // toggle click event
+    const onClick = useCallback(() => {
+        if (connected) {
+            // disconnect
+            chrome.proxy && chrome.proxy.settings.clear({}, () => {
+                setConnected(false);
+                setCountry(null);
+                setMsg("未連線")
+            });
+        } else {
+            // open vpn.cocomine.cc
+            window.open('https://vpn.cocomine.cc', '_blank')
+            return
+        }
+    }, [connected]);
+
+    // toggle mouse enter event
+    const onMouseEnter = useCallback(() => {
+        if (connected) {
+            setMsg("點擊以斷開")
+        } else {
+            setMsg("點擊以開啟網頁")
+        }
+    }, [connected]);
+
+    // toggle mouse leave event
+    const onMouseLeave = useCallback(extracted, []);
+
     // get current proxy status
-    useEffect(() => {
-        chrome.proxy && chrome.proxy.settings.get({}, (config) => {
-            const value = config.value
-            // check if connected to vpn.cocomine.cc
-            if (value.mode === 'fixed_servers' && value.rules.singleProxy.host.match(/^(.*)(vpn\.cocomine\.cc)$/)) {
-                // get country code
-                const rexArray = /^(.*)(.{2})(\.vpn\.cocomine\.cc)$/.exec(value.rules.singleProxy.host)
-                const country = rexArray && rexArray[2].toUpperCase()
-                setCountry(country)
-                setConnected(true);
-            }
-        });
-    }, []);
+    useEffect(extracted, []);
 
     return (
         <Row className="justify-content-center align-content-center g-1">
             <Col xs={'auto'}>
-                <div className="link-status" data-connected={connected}>
+                <div className="link-status" data-connected={connected} onClick={onClick} onMouseEnter={onMouseEnter}
+                     onMouseLeave={onMouseLeave}>
                     {flag}
                 </div>
             </Col>
             <div className="w-100"></div>
             <Col xs={'auto'}>
-                <h3>{connected ? "已連接" + country + "節點" : "未連線"}</h3>
+                <h3>{msg}</h3>
             </Col>
         </Row>
     )
@@ -100,11 +132,15 @@ const LinkStatus: React.FC<{}> = () => {
 
 const TimeLast: React.FC<{}> = () => {
     const [expect_offline_time_Interval, setExpect_offline_time_Interval] = useState<string>("Loading...")
+    const [country, setCountry] = useState<countryType | null>(null);
     const [expired, setExpired] = useState<string | null>(null)
 
+    // get node expired time
     useEffect(() => {
         chrome.storage && chrome.storage.local.get('expired', (data) => {
+            console.debug(data) //debug
             setExpired(data.expired)
+            setCountry(data.country)
         });
     }, []);
 
@@ -123,11 +159,14 @@ const TimeLast: React.FC<{}> = () => {
         }
     }, [expired]);
 
+    if (expired === null) {
+        return null
+    }
     return (
         <Row className="justify-content-center align-content-center">
             <hr/>
             <Col xs={'auto'}>
-                <span>距離預計離線</span>
+                <span>距離{country}節點預計離線</span>
             </Col>
             <div className="w-100"></div>
             <Col xs={'auto'}>
@@ -136,5 +175,41 @@ const TimeLast: React.FC<{}> = () => {
         </Row>
     )
 }
+
+/**
+ * getProxyData is a Promise that retrieves the current proxy settings of the Chrome browser.
+ * It checks if the proxy is connected to vpn.cocomine.cc and if so, it extracts the country code from the host name.
+ *
+ * @returns {Promise} A Promise object that represents the completion of an asynchronous operation to fetch proxy settings.
+ *
+ * @resolve {Obj} An object containing two properties:
+ * - connected: A boolean indicating whether the proxy is connected to vpn.cocomine.cc.
+ * - country: A string representing the country code if connected to vpn.cocomine.cc, otherwise null.
+ *
+ * @reject {string} A string message "chrome.proxy not found" if chrome.proxy is not available.
+ */
+const getProxyData = new Promise<{ connected: boolean, country: countryType | null }>((resolve, reject) => {
+    // Check if chrome.proxy is available
+    if (chrome.proxy === undefined) return reject("chrome.proxy not found")
+
+    // Get the current proxy settings
+    chrome.proxy.settings.get({}, (config) => {
+        const value = config.value
+        console.debug(value) //debug
+
+        // Check if connected to vpn.cocomine.cc
+        if (value.mode === 'fixed_servers' && value.rules.singleProxy.host.match(/^(.*)(vpn\.cocomine\.cc)$/)) {
+            // Get country code
+            const rexArray = /^(.*)(.{2})(\.vpn\.cocomine\.cc)$/.exec(value.rules.singleProxy.host)
+            const country = rexArray && rexArray[2].toUpperCase()
+
+            // Resolve the promise with the connection status and country code
+            resolve({connected: true, country: country})
+        } else {
+            // Resolve the promise with the connection status as false and country as null
+            resolve({connected: false, country: null})
+        }
+    });
+})
 
 export default App;
