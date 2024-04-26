@@ -125,6 +125,7 @@ const LinkStatus: React.FC<{
 
 const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
     const [expect_offline_time_Interval, setExpect_offline_time_Interval] = useState<string>("Loading...")
+    const [enableExtend, setEnableExtend] = useState<boolean>(false)
     const [expired, setExpired] = useState<string | null>(vmData._expired)
 
     // update expect_offline_time_Interval every second
@@ -135,6 +136,7 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
                 const diff = expect_offline_time.diff(Date.now())
                 const tmp = moment.utc(diff).format('HH:mm:ss')
 
+                if (diff < 60 * 60 * 1000) setEnableExtend(true)
                 setExpect_offline_time_Interval(diff > 0 ? tmp : "節點已關閉");
             }, 1000)
 
@@ -156,6 +158,13 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
                 <div className="w-100"></div>
                 <Col xs={'auto'}>
                     <h5>{expect_offline_time_Interval}</h5>
+                </Col>
+                <Col xs={12}>
+                    <Button variant={enableExtend ? "primary" : "outline-primary"}
+                            className="w-100 rounded-5" href={"https://vpn.cocomine.cc/" + vmData._id} target="_blank"
+                            disabled={!enableExtend}>
+                        {enableExtend ? "延長開放時間" : "離線前一小時可以延長開放時間"}
+                    </Button>
                 </Col>
             </Row>
         </div>

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Cocomine VPN Extension",
   "description": "Cocomine VPN Extension use proxy",
-  "version": "0.1",
+  "version": "0.1.0-beta",
   "action": {
     "default_popup": "index.html",
     "default_icon": "192.png"

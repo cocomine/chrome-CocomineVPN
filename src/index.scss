@@ -132,8 +132,8 @@ code {
         top: var(--start-y);
         left: var(--start-x);
 
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         position: absolute;
         border-radius: 50%;
         animation: move-to-center 4s ease-in var(--bubble-float-delay) infinite;
