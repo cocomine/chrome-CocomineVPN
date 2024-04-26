@@ -1,0 +1,214 @@
+@import "~bootstrap/scss/bootstrap";
+
+$bootstrap-icons-font-dir: "~bootstrap-icons/font/fonts";
+@import "~bootstrap-icons/font/bootstrap-icons";
+
+@function random_range($min, $max) {
+    $rand: random();
+    $random_range: $min + floor($rand * (($max - $min) + 1));
+    @return $random_range;
+}
+
+html {
+    width: 300px;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',$bootstrap-icons-font-dir,
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.section{
+    padding: 1.2rem;
+    border-radius: 10px;
+    border: 5px solid $body-bg-dark;
+    background-color: $body-secondary-bg-dark;
+    position: relative;
+
+    &.glow{
+        background: radial-gradient($body-bg-dark, $body-secondary-bg-dark)
+    }
+}
+
+.link-status {
+    background-color: gray;
+    border-radius: 50%;
+    width: 5rem;
+    height: 5rem;
+    color: white;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.3s;
+    position: relative;
+
+    svg {
+        padding: 1rem;
+        width: 100%;
+        height: 100%;
+    }
+
+    &::before{
+        transition: opacity 0.3s;
+        opacity: 0;
+        font-family: 'Bootstrap-icons', sans-serif;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        font-size: 2.5rem;
+        background-repeat: no-repeat;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+    }
+
+    &:hover{
+        box-shadow: rgba(255, 255, 255, 0.5) 0 0 0 15px;
+        animation: none !important;
+        &::before{
+            opacity: 1 !important;
+        }
+    }
+
+
+    &[data-connected="false"] {
+        &::before{
+            padding: 0.5rem 1.3rem;
+            content: "\F1C5";
+        }
+    }
+
+    &[data-connected="true"] {
+        animation: float 1s infinite alternate both;
+        &::before{
+            padding: 0.4rem 1.3rem;
+            content: url("assets/dislink.svg");
+        }
+    }
+    
+    @keyframes float {
+        0%{
+            box-shadow: rgba(255, 255, 255, 0.5) 0 0 0;
+        }
+        100%{
+            box-shadow: rgba(255, 255, 255, 0.5) 0 0 0 15px;
+        }
+    }
+}
+
+.flag {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+
+    &.fit-left {
+        object-position: left;
+    }
+
+    &.fit-right {
+        object-position: right;
+    }
+}
+
+.particles{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+
+    .particle{
+        top: var(--start-y);
+        left: var(--start-x);
+
+        width: 8px;
+        height: 8px;
+        position: absolute;
+        border-radius: 50%;
+        animation: move-to-center 4s ease-in var(--bubble-float-delay) infinite;
+
+        &::before {
+            position: absolute;
+            content: '';
+            background-color: white;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            animation: 4s ease-in-out var(--bubble-float-delay) infinite alternate curve;
+            mask: radial-gradient(white 0, transparent 70%);
+            opacity: 0.5;
+        }
+
+        @for $i from 0 through 20 {
+            &:nth-child(#{$i}) {
+                --bubble-float-delay: #{random_range(0ms, 4000ms)};
+            }
+        }
+
+        /* upper */
+        @for $i from 0 through 5 {
+            &:nth-child(#{$i}) {
+                --start-x: #{random_range(0, 100%)};
+                --start-y: -6%;
+                --curve-r: -20px, 0;
+            }
+        }
+        /* right */
+        @for $i from 6 through 10 {
+            &:nth-child(#{$i}) {
+                --start-x: 100%;
+                --start-y: #{random_range(0, 100%)};
+                --curve-r: 0, -20px;
+            }
+        }
+        /* bottom */
+        @for $i from 11 through 15 {
+            &:nth-child(#{$i}) {
+                --start-x: #{random_range(0, 100%)};
+                --start-y: 100%;
+                --curve-r: 20px, 0;
+            }
+        }
+        /* left */
+        @for $i from 16 through 20 {
+            &:nth-child(#{$i}) {
+                --start-x: -6%;
+                --start-y: #{random_range(0, 100%)};
+                --curve-r: 0, 20px;
+            }
+        }
+    }
+}
+
+@keyframes curve {
+    0% {
+        transform: translate(0);
+    }
+    100% {
+        transform: translate(var(--curve-r));
+    }
+}
+
+@keyframes move-to-center {
+    0% {
+        top: var(--start-y);
+        left: var(--start-x);
+    }
+    100% {
+        top: 35%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
