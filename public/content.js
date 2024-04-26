@@ -1,20 +1,18 @@
 window.addEventListener('message', function (e) {
     // We only accept messages from ourselves
-    if (e.source !== window) {
-        return;
-    }
-    console.debug("content", e.data);
+    if (e.source !== window) return;
+    console.debug("content.js", e.data);
 
     if (e.data.type === "ExtensionInstalled" && e.data.ask) {
-        window.postMessage({type: "ExtensionInstalled", ask: false, installed: true});
+        window.postMessage({type: "ExtensionInstalled", ask: false, data: {installed: true}});
     }
 
     if (e.data.type === "Connect" && e.data.ask) {
-        chrome.runtime.sendMessage(e.data, function (response) {
+        const socks5Profile = e.data.data._profiles.find((p) => p.type === "socks5");
+        chrome.runtime.sendMessage({type: "Connect", data: socks5Profile}, function (response) {
             console.debug("content", response);
-            window.postMessage({type: "Connect", ask: false, connected: response.connected});
-            chrome.storage.local.set({expired: e.data.expired}).then((r) => {
-            });
+            window.postMessage({type: "Connect", ask: false, data:{connected: response.connected}});
+            chrome.storage.local.set({vmData: e.data.data})
         });
     }
 });

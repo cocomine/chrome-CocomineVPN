@@ -23,13 +23,7 @@ function App() {
                     </Col>
                 </Row>
             </div>
-            <div id="App">
-                <Row className="justify-content-center align-content-center">
-                    <Col xs={12}>
-                        <TimeLast/>
-                    </Col>
-                </Row>
-            </div>
+            <TimeLast/>
             <Row className="justify-content-between" style={{fontSize: "0.7em", padding: "5px"}}>
                 <Col xs="auto">
                             <span>Build by © {moment().format("yyyy")} <a
@@ -47,32 +41,6 @@ function App() {
             </Row>
         </>
     );
-}
-
-function getProxyData() {
-    return new Promise<{ connected: boolean, country: countryType | null }>((resolve, reject) => {
-        // Check if chrome.proxy is available
-        if (chrome.proxy === undefined) return reject("chrome.proxy not found")
-
-        // Get the current proxy settings
-        chrome.proxy.settings.get({}, (config) => {
-            const value = config.value
-            console.debug(value) //debug
-
-            // Check if connected to vpn.cocomine.cc
-            if (value.mode === 'fixed_servers' && value.rules.singleProxy && value.rules.singleProxy.host.match(/^(.*)(vpn\.cocomine\.cc)$/)) {
-                // Get country code
-                const rexArray = /^(.*)(.{2})(\.vpn\.cocomine\.cc)$/.exec(value.rules.singleProxy.host)
-                const country = rexArray && rexArray[2].toUpperCase()
-
-                // Resolve the promise with the connection status and country code
-                resolve({connected: true, country: country})
-            } else {
-                // Resolve the promise with the connection status as false and country as null
-                resolve({connected: false, country: null})
-            }
-        });
-    })
 }
 
 const LinkStatus: React.FC<{}> = () => {
@@ -169,9 +137,9 @@ const TimeLast: React.FC<{}> = () => {
 
     // get node expired time
     useEffect(() => {
-        chrome.storage && chrome.storage.local.get('expired', (data) => {
-            console.debug(data.expired) //debug
-            setExpired(data.expired || null)
+        chrome.storage && chrome.storage.local.get('vmData', (data) => {
+            console.debug(data) //debug
+            setExpired(data.vmData._expired)
         });
     }, []);
 
@@ -183,27 +151,53 @@ const TimeLast: React.FC<{}> = () => {
                 const diff = expect_offline_time.diff(Date.now())
                 const tmp = moment.utc(diff).format('HH:mm:ss')
 
-                setExpect_offline_time_Interval(diff > 0 ? tmp : "00:00:00");
+                setExpect_offline_time_Interval(diff > 0 ? tmp : "節點已關閉");
             }, 1000)
 
             return () => clearInterval(id)
         }
     }, [expired]);
 
-    if (expired === null) {
-        return null
-    }
+    if (expired === null) return null
     return (
-        <Row className="justify-content-center align-content-center">
-            <Col xs={'auto'}>
-                <span>距離節點預計離線</span>
-            </Col>
-            <div className="w-100"></div>
-            <Col xs={'auto'}>
-                <h5>{expect_offline_time_Interval}</h5>
-            </Col>
-        </Row>
+        <div id="App">
+            <Row className="justify-content-center align-content-center">
+                <Col xs={'auto'}>
+                    <span>距離節點預計離線</span>
+                </Col>
+                <div className="w-100"></div>
+                <Col xs={'auto'}>
+                    <h5>{expect_offline_time_Interval}</h5>
+                </Col>
+            </Row>
+        </div>
     )
+}
+
+function getProxyData() {
+    return new Promise<{ connected: boolean, country: countryType | null }>((resolve, reject) => {
+        // Check if chrome.proxy is available
+        if (chrome.proxy === undefined) return reject("chrome.proxy not found")
+
+        // Get the current proxy settings
+        chrome.proxy.settings.get({}, (config) => {
+            const value = config.value
+            console.debug(value) //debug
+
+            // Check if connected to vpn.cocomine.cc
+            if (value.mode === 'fixed_servers' && value.rules.singleProxy && value.rules.singleProxy.host.match(/^(.*)(vpn\.cocomine\.cc)$/)) {
+                // Get country code
+                const rexArray = /^(.*)(.{2})(\.vpn\.cocomine\.cc)$/.exec(value.rules.singleProxy.host)
+                const country = rexArray && rexArray[2].toUpperCase()
+
+                // Resolve the promise with the connection status and country code
+                resolve({connected: true, country: country})
+            } else {
+                // Resolve the promise with the connection status as false and country as null
+                resolve({connected: false, country: null})
+            }
+        });
+    })
 }
 
 export default App;

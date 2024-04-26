@@ -18,8 +18,8 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
     console.debug(message);
 
-    if (message.type === 'Connect' && message.ask) {
-        const [host, port] = message.profile.url.split(':');
+    if (message.type === 'Connect') {
+        const [host, port] = message.data.url.split(':');
 
         const config = {
             mode: "fixed_servers",
