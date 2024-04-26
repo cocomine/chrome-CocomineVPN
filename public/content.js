@@ -1,4 +1,4 @@
-window.addEventListener('message', function (e) {
+window.addEventListener('message', async function (e) {
     // We only accept messages from ourselves
     if (e.source !== window) return;
     console.debug("content.js", e.data);
