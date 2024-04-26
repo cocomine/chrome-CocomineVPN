@@ -18,7 +18,7 @@ function App() {
         if (connected) {
             // disconnect
             // check if chrome.proxy and chrome.storage is undefined
-            if(chrome.proxy === undefined || chrome.storage === undefined) return
+            if (chrome.proxy === undefined || chrome.storage === undefined) return
 
             // clear proxy settings
             chrome.proxy.settings.clear({}, () => {
@@ -100,7 +100,12 @@ const LinkStatus: React.FC<{
     }, [connectedProp, countryProp]);
 
     return (
-        <div className="section">
+        <div className="section glow">
+            {connected && <div className="particles">
+                {Array.from({length: 20}).map((_, i) => (
+                    <div key={i} className="particle"></div>
+                ))}
+            </div>}
             <Row className="justify-content-center align-content-center g-1">
                 <Col xs={'auto'}>
                     <div className="link-status" data-connected={connected} onClick={onDisconnect}
@@ -118,7 +123,7 @@ const LinkStatus: React.FC<{
     )
 }
 
-const TimeLast: React.FC<{vmData: VMDataType}> = ({vmData}) => {
+const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
     const [expect_offline_time_Interval, setExpect_offline_time_Interval] = useState<string>("Loading...")
     const [expired, setExpired] = useState<string | null>(vmData._expired)
 

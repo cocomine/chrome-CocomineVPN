@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import StorageChange = chrome.storage.StorageChange;
 
 /**
  * Type definition for the country.
@@ -119,19 +118,19 @@ function useProxyData() {
         if(chrome.storage === undefined) return;
 
         // Get the vmData from chrome.storage.local
-        chrome.storage && chrome.storage.local.get('vmData', (data) => {
+        chrome.storage.local.get('vmData', (data) => {
             console.debug(data) //debug
             setVmData(data.vmData)
         });
 
         // Add listener for changes in vmData
-        const listener = (changes: {[p: string]: StorageChange}):void => {
+        const listener = (changes: {[p: string]: chrome.storage.StorageChange}):void => {
             console.debug(changes) //debug
             if (changes.vmData) {
                 setVmData(changes.vmData.newValue)
             }
         }
-        chrome.storage && chrome.storage.onChanged.addListener(listener);
+        chrome.storage.onChanged.addListener(listener);
 
         return () => {
             chrome.storage.onChanged.removeListener(listener);
