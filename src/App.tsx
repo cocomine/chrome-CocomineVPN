@@ -150,7 +150,7 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
 
     if (expired === null) return null
     return (
-        <div className="section">
+        <div className="section glow">
             <Row className="justify-content-center align-content-center">
                 <Col xs={'auto'}>
                     <span>距離節點預計離線</span>
