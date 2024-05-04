@@ -12,6 +12,7 @@ import {countryType, useProxyData, VMDataType} from "./proxyData";
 
 function App() {
     const {connected, country, vmData} = useProxyData();
+    const audio = useMemo(() => new Audio(require('./assets/Jig 1.mp3')), []);
 
     // toggle click event
     const onDisconnect = useCallback(async () => {
@@ -23,13 +24,14 @@ function App() {
             // clear proxy settings
             chrome.proxy.settings.clear({}, () => {
                 chrome.storage.local.remove('vmData');
+                audio.play()
             });
         } else {
             // open vpn.cocomine.cc
             window.open('https://vpn.cocomine.cc', '_blank')
             return
         }
-    }, [connected]);
+    }, [connected, audio]);
 
     return (
         <>
@@ -141,6 +143,8 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
             }, 1000)
 
             return () => clearInterval(id)
+        }else{
+            setExpect_offline_time_Interval("節點已關閉")
         }
     }, [expired]);
 
@@ -148,7 +152,6 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
         setExpired(vmData._expired)
     }, [vmData]);
 
-    if (expired === null) return null
     return (
         <div className="section glow">
             <Row className="justify-content-center align-content-center">
