@@ -12,6 +12,7 @@ import {countryType, useProxyData, VMDataType} from "./proxyData";
 
 function App() {
     const {connected, country, vmData} = useProxyData();
+    const audio = useMemo(() => new Audio(require('./assets/Jig 1.mp3')), []);
 
     // toggle click event
     const onDisconnect = useCallback(async () => {
@@ -23,6 +24,7 @@ function App() {
             // clear proxy settings
             chrome.proxy.settings.clear({}, () => {
                 chrome.storage.local.remove('vmData');
+                audio.play()
             });
         } else {
             // open vpn.cocomine.cc
