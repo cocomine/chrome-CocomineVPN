@@ -4,17 +4,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     }
 });
 
-/**
- * The `connect` function is used to set the proxy settings of the Chrome browser.
- * It takes a profile object as an argument, which contains a url property in the format 'host:port'.
- * The function returns a Promise that resolves when the proxy settings have been successfully set.
- *
- * @param {Object} profile - The profile object containing the url of the proxy.
- * @param {string} profile.url - The url of the proxy in the format 'host:port'.
- *
- * @returns {Promise} A Promise that resolves when the proxy settings have been successfully set.
- */
-
+// The `onMessage` event listener is used to receive messages from the content script.
 chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
     console.debug(message);
 
@@ -36,4 +26,21 @@ chrome.runtime.onMessage.addListener( (message, sender, sendResponse) => {
         });
         return true
     }
+});
+
+// The `onStartup` event listener is used to check if the vmData has expired.
+chrome.runtime.onStartup.addListener(() => {
+    // Get the vmData from chrome.storage.local
+    chrome.storage.local.get('vmData', (data) => {
+        console.debug(data) //debug
+        if (!data.vmData) return;
+
+        const expired = new Date(data.vmData._expired).getTime()
+        if(expired < Date.now()) {
+            // clear proxy settings
+            chrome.proxy.settings.clear({}, () => {
+                chrome.storage.local.remove('vmData');
+            });
+        }
+    });
 });

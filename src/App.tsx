@@ -141,6 +141,8 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
             }, 1000)
 
             return () => clearInterval(id)
+        }else{
+            setExpect_offline_time_Interval("節點已關閉")
         }
     }, [expired]);
 
@@ -148,7 +150,6 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
         setExpired(vmData._expired)
     }, [vmData]);
 
-    if (expired === null) return null
     return (
         <div className="section glow">
             <Row className="justify-content-center align-content-center">
