@@ -38,3 +38,9 @@ Cocomine VPN Extension
 
 ![Step 5](/doc/step5.png)
 
+Update Log
+===
+
+0.1.3
+---
++ 增加chatgpt only功能模式, 開啟後只代理chatgpt.com和openai.com的網站

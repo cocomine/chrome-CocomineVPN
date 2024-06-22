@@ -3,10 +3,12 @@ window.addEventListener('message', async function (e) {
     if (e.source !== window) return;
     console.debug("content script", e.data);
 
+    // Check if the extension is installed
     if (e.data.type === "ExtensionInstalled" && e.data.ask) {
         window.postMessage({type: "ExtensionInstalled", ask: false, data: {installed: true}});
     }
 
+    // Receive the Connect message
     if (e.data.type === "Connect" && e.data.ask) {
         const socks5Profile = e.data.data._profiles.find((p) => p.type === "socks5");
         chrome.runtime.sendMessage({type: "Connect", data: socks5Profile}, function (response) {
@@ -16,6 +18,7 @@ window.addEventListener('message', async function (e) {
         });
     }
 
+    // Receive the PostVMData message
     if (e.data.type === "PostVMData" && !e.data.ask) {
         chrome.storage.local.get('vmData', (data) => {
             console.debug("content script", data) //debug

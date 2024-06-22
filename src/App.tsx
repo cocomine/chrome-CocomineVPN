@@ -1,4 +1,4 @@
-import {Button, Col, Row} from "react-bootstrap";
+import {Button, Col, FormCheck, Row} from "react-bootstrap";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import moment from "moment";
 import tw_flag from "./assets/tw.svg";
@@ -8,7 +8,8 @@ import hk_flag from "./assets/hk.svg";
 import uk_flag from "./assets/uk.svg";
 import dislink from "./assets/dislink.svg";
 import {APP_VERSION} from "./index";
-import {countryType, useProxyData, VMDataType} from "./proxyData";
+import {countryType, useChatGPTOnlyData, useProxyData, VMDataType} from "./proxyData";
+import FormCheckInput from "react-bootstrap/FormCheckInput";
 
 function App() {
     const {connected, country, vmData} = useProxyData();
@@ -37,6 +38,7 @@ function App() {
         <>
             <LinkStatus connectedProp={connected} countryProp={country} onDisconnect={onDisconnect}/>
             {vmData && <TimeLast vmData={vmData}/>}
+            <ChatGPT_only/>
             <Row className="justify-content-between" style={{fontSize: "0.7em", padding: "5px"}}>
                 <Col xs="auto">
                     <span>Build by © {moment().format("yyyy")} <a
@@ -143,7 +145,7 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
             }, 1000)
 
             return () => clearInterval(id)
-        }else{
+        } else {
             setExpect_offline_time_Interval("節點已關閉")
         }
     }, [expired]);
@@ -168,6 +170,41 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
                             disabled={!enableExtend}>
                         {enableExtend ? "延長開放時間" : "離線前一小時可以延長開放時間"}
                     </Button>
+                </Col>
+            </Row>
+        </div>
+    )
+}
+
+const ChatGPT_only: React.FC = () => {
+    const {vmData} = useProxyData();
+    const {chatGPTOnly} = useChatGPTOnlyData();
+
+    const onChatGPTOnlyChange = useCallback(() => {
+        if (chrome.proxy === undefined || chrome.storage === undefined) return
+        chrome.storage.local.set({chatGPTOnly: !chatGPTOnly}) // toggle chatGPTOnly
+
+        if (vmData === null) return;
+        const socks5Profile = vmData._profiles.find((p) => p.type === "socks5");
+
+        // reconnect
+        chrome.runtime.sendMessage({type: "Connect", data: socks5Profile});
+    }, [chatGPTOnly, vmData])
+
+    return (
+        <div className="section glow">
+            <Row className="justify-content-center align-content-center">
+                <Col xs={'auto'}>
+                    <h5>ChatGPT Only Mode</h5>
+                </Col>
+                <div className="w-100"></div>
+                <Col xs={'auto'}>
+                    <small className="text-muted text-center"><p>開啟後只代理chatgpt.com和openai.com的網站</p></small>
+                </Col>
+                <Col xs={'auto'}>
+                    <FormCheck type="switch" id="chatGPTOnly">
+                        <FormCheckInput type="checkbox" checked={chatGPTOnly} onChange={onChatGPTOnlyChange} style={{width: "4rem", height: "2rem"}}/>
+                    </FormCheck>
                 </Col>
             </Row>
         </div>

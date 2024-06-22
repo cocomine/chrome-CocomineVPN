@@ -57,6 +57,15 @@ type VMDataType = {
     _expired: string | null
 }
 
+/**
+ * `useProxyData` is a custom React hook that manages the state and effects related to proxy data.
+ * It returns an object containing the connection status, country code, and VM data.
+ *
+ * @returns The state values for connected, country, and vmData.
+ * @returns {boolean} connected - A boolean indicating whether the user is connected to vpn.cocomine.cc.
+ * @returns {countryType | null} country - The country code of the VPN server, or null if not connected.
+ * @returns {VMDataType | null} vmData - The VM data retrieved from chrome.storage.local, or null if not available.
+ */
 function useProxyData() {
     const [connected, setConnected] = useState(false);
     const [country, setCountry] = useState<countryType | null>(null);
@@ -73,14 +82,13 @@ function useProxyData() {
             console.debug(config) //debug
 
             // Check if connected to vpn.cocomine.cc
-            if (config.levelOfControl === 'controlled_by_this_extension' && value.mode === 'fixed_servers' && value.rules.singleProxy && value.rules.singleProxy.host.match(/^(.*)(vpn\.cocomine\.cc)$/)) {
-                // Get country code
-                const rexArray = /^(.*)(.{2})(\.vpn\.cocomine\.cc)$/.exec(value.rules.singleProxy.host)
-                const country = rexArray && rexArray[2].toUpperCase()
-
-                // Resolve the promise with the connection status and country code
-                setConnected(true)
-                setCountry(country)
+            if (config.levelOfControl === 'controlled_by_this_extension') {
+                if((value.mode === 'fixed_servers') ||
+                    (value.mode === 'pac_script')){
+                    setConnected(true)
+                }else {
+                    setConnected(false)
+                }
             } else {
                 // Resolve the promise with the connection status as false and country as null
                 setConnected(false)
@@ -91,14 +99,16 @@ function useProxyData() {
         // Add listener for changes in proxy settings
         const listener = (details: chrome.types.ChromeSettingGetResultDetails):void => {
             console.debug(details) //debug
-            if (details.levelOfControl === 'controlled_by_this_extension' && details.value.mode === 'fixed_servers' && details.value.rules.singleProxy && details.value.rules.singleProxy.host.match(/^(.*)(vpn\.cocomine\.cc)$/)) {
-                // Get country code
-                const rexArray = /^(.*)(.{2})(\.vpn\.cocomine\.cc)$/.exec(details.value.rules.singleProxy.host)
-                const country = rexArray && rexArray[2].toUpperCase()
+            const value = details.value
 
-                // Resolve the promise with the connection status and country code
-                setConnected(true)
-                setCountry(country)
+            // Check if connected to vpn.cocomine.cc
+            if (details.levelOfControl === 'controlled_by_this_extension') {
+                if((value.mode === 'fixed_servers') ||
+                    (value.mode === 'pac_script')){
+                    setConnected(true)
+                }else {
+                    setConnected(false)
+                }
             } else {
                 // Resolve the promise with the connection status as false and country as null
                 setConnected(false)
@@ -121,6 +131,7 @@ function useProxyData() {
         chrome.storage.local.get('vmData', (data) => {
             console.debug(data) //debug
             setVmData(data.vmData)
+            setCountry(data.vmData?._country || null)
         });
 
         // Add listener for changes in vmData
@@ -128,6 +139,7 @@ function useProxyData() {
             console.debug(changes) //debug
             if (changes.vmData) {
                 setVmData(changes.vmData.newValue)
+                setCountry(changes.vmData.newValue._country || null);
             }
         }
         chrome.storage.onChanged.addListener(listener);
@@ -140,5 +152,43 @@ function useProxyData() {
     return {connected, country, vmData}
 }
 
-export {useProxyData}
+/**
+ * `useChatGPTOnlyData` is a custom React hook that manages the state and effects related to the `chatGPTOnly` data.
+ * It returns an object containing the `chatGPTOnly` state.
+ *
+ * @returns The state value for `chatGPTOnly`.
+ * @returns {boolean} chatGPTOnly - A boolean indicating whether the user has enabled the `chatGPTOnly` mode.
+ */
+function useChatGPTOnlyData(){
+    const [chatGPTOnly, setChatGPTOnly] = useState(false);
+
+    useEffect(() => {
+        // Check if chrome.storage is available
+        if(chrome.storage === undefined) return;
+
+        // Get the chatGPTOnly from chrome.storage.local
+        chrome.storage.local.get('chatGPTOnly', (data) => {
+            console.debug(data) //debug
+            setChatGPTOnly(data.chatGPTOnly)
+        });
+
+        // Add listener for changes in chatGPTOnly
+        const listener = (changes: {[p: string]: chrome.storage.StorageChange}):void => {
+            console.debug(changes) //debug
+            if (changes.chatGPTOnly) {
+                setChatGPTOnly(changes.chatGPTOnly.newValue)
+            }
+        }
+        chrome.storage.onChanged.addListener(listener);
+
+        return () => {
+            chrome.storage.onChanged.removeListener(listener);
+        }
+    }, []);
+
+    return {chatGPTOnly}
+
+}
+
+export {useProxyData, useChatGPTOnlyData}
 export type {countryType, providerType, profileType, readOnlyMode, VMDataType}
