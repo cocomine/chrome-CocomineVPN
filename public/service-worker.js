@@ -2,7 +2,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') {
         chrome.tabs.create({ url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md' });
     }else if(reason === 'update'){
-        chrome.tabs.create({ url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#0.1.3' });
+        chrome.tabs.create({ url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#013' });
     }
 });
 
