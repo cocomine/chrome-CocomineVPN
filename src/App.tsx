@@ -10,6 +10,7 @@ import dislink from "./assets/dislink.svg";
 import {APP_VERSION} from "./index";
 import {countryType, useChatGPTOnlyData, useProxyData, VMDataType} from "./proxyData";
 import FormCheckInput from "react-bootstrap/FormCheckInput";
+import BlackWhiteList from "./blackWhiteList";
 
 function App() {
     const {connected, country, vmData} = useProxyData();
@@ -36,9 +37,16 @@ function App() {
 
     return (
         <>
-            <LinkStatus connectedProp={connected} countryProp={country} onDisconnect={onDisconnect}/>
-            {vmData && <TimeLast vmData={vmData}/>}
-            <ChatGPT_only/>
+            <Row className={"g-0"}>
+                <Col>
+                    <LinkStatus connectedProp={connected} countryProp={country} onDisconnect={onDisconnect}/>
+                    {vmData && <TimeLast vmData={vmData}/>}
+                    <ChatGPT_only/>
+                </Col>
+                <Col>
+                    <BlackWhiteList/>
+                </Col>
+            </Row>
             <Row className="justify-content-between" style={{fontSize: "0.7em", padding: "5px"}}>
                 <Col xs="auto">
                     <span>Build by © {moment().format("yyyy")} <a

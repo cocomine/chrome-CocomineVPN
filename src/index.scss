@@ -10,7 +10,7 @@ $bootstrap-icons-font-dir: "~bootstrap-icons/font/fonts";
 }
 
 html {
-    width: 300px;
+    width: 600px;
 }
 
 body {
@@ -119,6 +119,39 @@ code {
     }
 }
 
+.list {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: calc(100% - var(--bs-gutter-x));
+    mask: linear-gradient(0deg, var(--mask-bottom) 0%, black 20%, black 80%, var(--mask-top) 100%);
+
+    ul{
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            padding: .5rem;
+            transition: background-color 0.3s;
+
+            &:hover {
+                background-color: $body-secondary-bg-dark;
+                .btn-close {
+                    display: block;
+                }
+            }
+            .btn-close {
+                display: none;
+            }
+        }
+        li + li {
+            border-top: 1px solid $secondary;
+        }
+    }
+}
+
+/* particles start */
 .particles{
     position: absolute;
     top: 0;
@@ -212,3 +245,4 @@ code {
         transform: translate(-50%, -50%);
     }
 }
+/* particles end */
