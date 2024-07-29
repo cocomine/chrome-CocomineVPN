@@ -1,0 +1,13 @@
+.dynamic-text-container {
+    width: 100%; /* Adjust as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dynamic-text {
+    display: inline-block;
+    transition: font-size 0.2s ease;
+}

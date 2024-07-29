@@ -11,6 +11,7 @@ import {APP_VERSION} from "./index";
 import {countryType, useChatGPTOnlyData, useProxyData, VMDataType} from "./proxyData";
 import FormCheckInput from "react-bootstrap/FormCheckInput";
 import BlackWhiteList from "./blackWhiteList";
+import {useProxyMode} from "./blackWhiteListData";
 
 function App() {
     const {connected, country, vmData} = useProxyData();
@@ -41,7 +42,7 @@ function App() {
                 <Col>
                     <LinkStatus connectedProp={connected} countryProp={country} onDisconnect={onDisconnect}/>
                     {vmData && <TimeLast vmData={vmData}/>}
-                    <ChatGPT_only/>
+                    <ChatGPTOnly/>
                 </Col>
                 <Col>
                     <BlackWhiteList/>
@@ -184,9 +185,10 @@ const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
     )
 }
 
-const ChatGPT_only: React.FC = () => {
+const ChatGPTOnly: React.FC = () => {
     const {vmData} = useProxyData();
     const {chatGPTOnly} = useChatGPTOnlyData();
+    const {mode} = useProxyMode();
 
     const onChatGPTOnlyChange = useCallback(() => {
         if (chrome.proxy === undefined || chrome.storage === undefined) return
@@ -201,6 +203,16 @@ const ChatGPT_only: React.FC = () => {
 
     return (
         <div className="section glow">
+            {mode !== "disable" &&
+                <div className="black-cover">
+                    <Row className="justify-content-center align-items-center h-100">
+                        <Col xs={'auto'} className="text-center">
+                            <i className="bi bi-slash-circle fs-1"></i>
+                            <p>請先停用自訂代理規則</p>
+                        </Col>
+                    </Row>
+                </div>
+            }
             <Row className="justify-content-center align-content-center">
                 <Col xs={'auto'}>
                     <h5>ChatGPT Only Mode</h5>
@@ -211,7 +223,7 @@ const ChatGPT_only: React.FC = () => {
                 </Col>
                 <Col xs={'auto'}>
                     <FormCheck type="switch" id="chatGPTOnly">
-                        <FormCheckInput type="checkbox" checked={chatGPTOnly} onChange={onChatGPTOnlyChange} style={{width: "4rem", height: "2rem"}}/>
+                        <FormCheckInput type="checkbox" checked={chatGPTOnly && mode === "disable"} onChange={onChatGPTOnlyChange} style={{width: "4rem", height: "2rem"}}/>
                     </FormCheck>
                 </Col>
             </Row>

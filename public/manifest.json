@@ -17,7 +17,8 @@
   },
   "permissions": [
     "proxy",
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "host_permissions": [
     "*://*.vpn.cocomine.cc/*",

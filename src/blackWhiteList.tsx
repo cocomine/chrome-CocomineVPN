@@ -1,23 +1,45 @@
-import {Button, ButtonGroup, CloseButton, Col, Modal, Row} from "react-bootstrap";
-import React, {CSSProperties, useCallback, useState} from "react";
+import {Button, ButtonGroup, CloseButton, Col, Form, Modal, Row} from "react-bootstrap";
+import React, {CSSProperties, useCallback, useEffect, useMemo, useState} from "react";
 import Scrollbar, {positionValues} from "react-custom-scrollbars";
-import {ProxyMode, useProxyMode} from "./blackWhiteListData";
+import {
+    AddURLModalProps,
+    ListType,
+    ProxyMode,
+    URLSelectorProps,
+    useBlackWhiteListData,
+    useProxyMode
+} from "./blackWhiteListData";
+import DynamicText from "./DynamicText";
+
+const colors = ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"] //colors for the glow effect
 
 const BlackWhiteList = () => {
 
+    const whitelist = useBlackWhiteListData("whitelist") // get the whitelist data
+    const blacklist = useBlackWhiteListData("blacklist") // get the blacklist data
     const {mode} = useProxyMode(); // get the proxy mode
     const [show, setShow] = useState(false); // show add url modal
     const [maskTop, setMaskTop] = useState('black'); // list top mask color
     const [maskBottom, setMaskBottom] = useState('transparent') // list bottom mask color
+    const [activeURL, setActiveURL] = useState("") // active url
 
     /* handle delete event and delete the url */
     const onDelete = useCallback((url: string) => {
-        console.log(url)
-    }, [])
+        // Check if chrome.storage is available
+        if (chrome.storage === undefined) return;
+
+        // Get the list from chrome.storage.sync
+        chrome.storage.sync.get(mode, (data) => {
+            const list = data[mode] ?? []
+            // Remove the selected url from the list
+            chrome.storage.sync.set({[mode]: list.filter((value: string) => value !== url)}, () => {
+                console.log(`${url} removed from ${mode}`)
+            })
+        });
+    }, [mode])
 
     /* handle scroll events and update the mask colors based on the scroll position. */
     const onScroll = useCallback((values: positionValues) => {
-        console.log(values)
         setMaskTop(values.top <= 0.15 ? `rgba(0,0,0,${(values.top - 0.15) / (0 - 0.15)})` : 'transparent')
         setMaskBottom(values.top >= 0.85 ? `rgba(0,0,0,${(values.top - 0.85) / (1 - 0.85)})` : 'transparent')
     }, [])
@@ -25,13 +47,65 @@ const BlackWhiteList = () => {
     /* handle proxy mode change event */
     const onProxyModeChange = useCallback((mode: ProxyMode) => {
         // Check if chrome.storage is available
-        if(chrome.storage === undefined) return;
+        if (chrome.storage === undefined) return;
 
         // Set the proxyMode to chrome.storage.local
         chrome.storage.local.set({proxyMode: mode}, () => {
             console.log(`Proxy mode set to ${mode}`)
         });
     }, [])
+
+    /* handle add event */
+    const onAdd = useCallback(() => {
+        // Check if chrome.tabs is available
+        if (chrome.tabs === undefined) return;
+
+        // Get the active tab url
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0].url === undefined) return;
+
+            setActiveURL(tabs[0].url)
+            setShow(true)
+        });
+    }, [])
+
+    /* memoized list component */
+    const list = useMemo(() => {
+        if (mode === "whitelist") {
+            return (
+                <ul>
+                    {whitelist.data.map((url) =>
+                        <li>{url} <CloseButton className={"float-end"} onClick={() => onDelete(url)}/></li>
+                    )}
+                    <li>
+                        <div className="text-center text-muted">
+                            <i className="bi bi-chevron-bar-down fs-1"></i>
+                            <p>已經在最底了</p>
+                        </div>
+                    </li>
+                </ul>)
+        } else if (mode === "blacklist") {
+            return (
+                <ul>
+                    {blacklist.data.map((url) =>
+                        <li>{url} <CloseButton className={"float-end"} onClick={() => onDelete(url)}/></li>
+                    )}
+                    <li>
+                        <div className="text-center text-muted">
+                            <i className="bi bi-chevron-bar-down fs-1"></i>
+                            <p>已經在最底了</p>
+                        </div>
+                    </li>
+                </ul>)
+        } else {
+            return (
+                <div className="text-center text-muted pt-5">
+                    <i className="bi bi-slash-circle fs-1"></i>
+                    <p>自訂代理規則已停用</p>
+                </div>
+            );
+        }
+    }, [mode, whitelist, blacklist, onDelete]);
 
     return (
         <>
@@ -56,64 +130,220 @@ const BlackWhiteList = () => {
                         <div className={'list'}
                              style={{'--mask-top': maskTop, '--mask-bottom': maskBottom} as CSSProperties}>
                             <Scrollbar style={{height: '100%'}} onUpdate={onScroll}>
-                                <ul>
-                                    <li>chatgpt.com <CloseButton className={"float-end"}
-                                                                 onClick={() => onDelete('chatgpt.com')}/>
-                                    </li>
-                                    <li>openai.com <CloseButton className={"float-end"}
-                                                                onClick={() => onDelete('openai.com')}/>
-                                    </li>
-                                    <li>google.com <CloseButton className={"float-end"}
-                                                                onClick={() => onDelete('google.com')}/>
-                                    </li>
-                                </ul>
+                                {list}
                             </Scrollbar>
                         </div>
                     </Col>
                     <Col xs={'auto'}>
-                        <Button variant="primary" className="w-100 rounded-5" onClick={() => setShow(true)}><i
+                        <Button variant="primary" className="w-100 rounded-5" onClick={onAdd}><i
                             className="bi bi-plus-lg me-2"></i>添加目前網站</Button>
                     </Col>
                 </Row>
             </div>
-            <AddURLModal show={show} onHide={() => setShow(false)}/>
+            <AddURLModal show={show} onHide={() => setShow(false)} url={activeURL}/>
         </>
     );
 }
 
+/**
+ * Dynamic effect URL selector
+ */
+const URLSelector: React.FC<URLSelectorProps> = ({value, onSelect, onHover}) => {
+
+    const [selectedIndex, setSelectedIndex] = useState<number>(-1) //selected index
+    const [hoverIndex, setHoverIndex] = useState<number>(-1) //hovered index
+    const [url, setURL] = useState(new URL(value)) //url object
+
+    /**
+     * Callback function to handle clicking on a part of the URL
+     */
+    const onClick = useCallback((index: number) => {
+        setSelectedIndex(index)
+        setHoverIndex(index)
+        onSelect(url.host.split('.').slice(index).join('.'))
+    }, [url, onSelect])
+
+    /**
+     * Callback function to handle mouse hovering on a part of the URL
+     */
+    const onMouseEnter = useCallback((index: number) => {
+        setHoverIndex(index)
+        onHover && onHover(url.host.split('.').slice(index).join('.'))
+    }, [onHover, url])
+
+    /**
+     * Callback function to handle mouse leaving a part of the URL
+     */
+    const onMouseLeave = useCallback(() => {
+        setHoverIndex(selectedIndex)
+        onHover && onHover(null)
+    }, [selectedIndex, onHover])
+
+    /**
+     * Nested HTML component to display the URL parts with a glow effect
+     * based on the hovered index.
+     */
+    const nestedHTML = useMemo(() => {
+        //split the host into parts
+        const host = url.host.split('.');
+        //join last 2 parts of the host to make it a single part
+        host.splice(host.length - 2, 2, host.slice(-2).join('.'))
+
+        return (
+            <>
+                {host.map((part, index) => {
+                    const color = hoverIndex <= index ? colors[(hoverIndex < 0 ? index : hoverIndex) % colors.length] : 'inherit'
+
+                    return (
+                        <span key={index}
+                              onClick={() => onClick(index)}
+                              onMouseEnter={() => onMouseEnter(index)}
+                              onMouseLeave={onMouseLeave}
+                              style={{color}}>
+                            {part}{index < host.length - 1 ? '.' : ''}
+                        </span>
+                    )
+                })}
+            </>
+        )
+    }, [url, onMouseEnter, onMouseLeave, hoverIndex, onClick])
+
+    useEffect(() => {
+        setURL(new URL(value))
+    }, [value]);
+
+    return (
+        <DynamicText defaultFontSize="1.5em"><span style={{cursor: "pointer"}}>{nestedHTML}</span></DynamicText>
+    )
+}
 
 /**
  * Component for adding URLs to either a whitelist or a blacklist.
  */
-const AddURLModal: React.FC<{ show: boolean, onHide: () => void }> = ({show, onHide}) => {
+const AddURLModal: React.FC<AddURLModalProps> = ({show, onHide, url}) => {
 
-    /**
-     * Callback function to handle adding a URL to the whitelist.
-     */
-    const onAddWhiteList = useCallback(() => {
-        console.log('add white list')
-    }, []);
+    const [addListType, setAddListType] = useState<ListType>("whitelist")
+    const [selectedURL, setSelectedURL] = useState<string | null>(null)
+    const [demoURL, setDemoURL] = useState<string | null>(null)
+    const [thisHostOnly, setThisHostOnly] = useState<boolean>(false)
 
     /**
      * Callback function to handle adding a URL to the blacklist.
      */
-    const onAddBlackList = useCallback(() => {
-        console.log('add black list')
-    }, []);
+    const onAdd = useCallback(() => {
+        //check if chrome.storage is available
+        if (chrome.storage === undefined) return;
+
+        //get the list from chrome.storage.sync
+        chrome.storage.sync.get(addListType, (data) => {
+            const list: string[] = data[addListType] ?? []
+            if (selectedURL && !list.includes(selectedURL)) list.push(selectedURL)
+            if (!thisHostOnly && !list.includes('*.' + selectedURL)) list.push('*.' + selectedURL)
+
+            //add the selected url to the list
+            chrome.storage.sync.set({[addListType]: list}, () => {
+                console.log(`${selectedURL} added to ${addListType}`)
+            })
+        });
+
+        onHide();
+    }, [selectedURL, addListType, onHide, thisHostOnly]);
+
+    /**
+     * Callback function to handle the change in the "Only this host" checkbox.
+     */
+    const onThisHostOnlyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        console.debug(e.target.checked)
+        setThisHostOnly(e.target.checked)
+    }, [])
+
+    /**
+     * Memoized component to display the URLs that pass the condition.
+     */
+    const pass = useMemo(() => {
+        const host = (demoURL ?? selectedURL)?.split('.');
+
+        if (!host) return null;
+        return (
+            <ul>
+                <li>{host.join('.')}</li>
+                {!thisHostOnly ? <>
+                    <li>example.{host.join('.')}</li>
+                    <li>*.{host.join('.')}</li>
+                </> : null}
+            </ul>
+        )
+    }, [selectedURL, thisHostOnly, demoURL])
+
+    /**
+     * Memoized component to display the URLs that do not pass the condition.
+     */
+    const reject = useMemo(() => {
+        //split the host into parts
+        const host = (demoURL ?? selectedURL)?.split('.');
+
+        if (!host) return null;
+        return (
+            <ul>
+                {thisHostOnly ? <>
+                    <li>example.{host.join('.')}</li>
+                    <li>*.{host.join('.')}</li>
+                </> : null}
+                {host.length > 2 ? <li>{host.slice(1).join('.')}</li> : null}
+                {host.length > 1 ? <li>example.{host.slice(1).join('.')}</li> : null}
+            </ul>
+        )
+    }, [selectedURL, thisHostOnly, demoURL])
+
+    useEffect(() => {
+        setSelectedURL(null)
+        setDemoURL(null)
+    }, [show]);
 
     return (
         <Modal show={show} fullscreen onHide={onHide}>
             <Modal.Header closeButton>
                 <Modal.Title>添加網站</Modal.Title>
             </Modal.Header>
-            <Modal.Body>Modal body content</Modal.Body>
+            <Modal.Body className="overflow-y-scroll">
+                <Row className="gy-2 justify-content-center">
+                    <Col xs={'auto'}>
+                        <ButtonGroup>
+                            <Button variant={addListType === "whitelist" ? "primary" : "outline-primary"}
+                                    onClick={() => setAddListType('whitelist')}
+                                    className="rounded-start-5">添加到白名單</Button>
+                            <Button variant={addListType === "blacklist" ? "primary" : "outline-primary"}
+                                    onClick={() => setAddListType('blacklist')}
+                                    className="rounded-end-5">添加到黑名單</Button>
+                        </ButtonGroup>
+                    </Col>
+                    <Col xs={12}>
+                        <div>請選擇網站網域範圍</div>
+                        <URLSelector value={url} onSelect={(value) => setSelectedURL(value)}
+                                     onHover={(value) => setDemoURL(value)}/>
+                    </Col>
+                    <Col/>
+                    <Col xs={'auto'}>
+                        <Form.Check type="checkbox" label="只針對此網域" id="thisHostOnly"
+                                    onChange={onThisHostOnlyChange} checked={thisHostOnly}/>
+                    </Col>
+                    <Col xs={12}>
+                        <Row>
+                            <Col className="text-success-emphasis">
+                                <p>以下網站<span className="fst-italic fs-5 fw-bold">符合</span>條件:</p>
+                                {pass}
+                            </Col>
+                            <Col className="text-danger-emphasis">
+                                <p>以下網站<span className="fst-italic fs-5 fw-bold">不符合</span>條件:</p>
+                                {reject}
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+            </Modal.Body>
             <Modal.Footer>
-                <Button variant="primary" onClick={onAddWhiteList} className="rounded-5">
-                    添加到白名單
-                </Button>
-                <Button variant="primary" onClick={onAddBlackList} className="rounded-5">
-                    添加到黑名單
-                </Button>
+                <Button variant="primary" onClick={onAdd} className="rounded-5"
+                        disabled={selectedURL === null}>添加到名單</Button>
             </Modal.Footer>
         </Modal>
     )
