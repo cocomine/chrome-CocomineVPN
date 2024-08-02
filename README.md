@@ -44,3 +44,7 @@ Update Log
 0.1.3
 ---
 + 增加chatgpt only功能模式, 開啟後只代理chatgpt.com和openai.com的網站
+
+0.2.0
+---
++ 增加自訂代理規則功能

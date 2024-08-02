@@ -10,11 +10,13 @@ import {
     useProxyMode
 } from "./blackWhiteListData";
 import DynamicText from "./DynamicText";
+import {useProxyData} from "./proxyData";
 
 const colors = ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"] //colors for the glow effect
 
 const BlackWhiteList = () => {
 
+    const {vmData} = useProxyData();
     const whitelist = useBlackWhiteListData("whitelist") // get the whitelist data
     const blacklist = useBlackWhiteListData("blacklist") // get the blacklist data
     const {mode} = useProxyMode(); // get the proxy mode
@@ -53,7 +55,13 @@ const BlackWhiteList = () => {
         chrome.storage.local.set({proxyMode: mode}, () => {
             console.log(`Proxy mode set to ${mode}`)
         });
-    }, [])
+
+        if (vmData === null) return;
+        const socks5Profile = vmData._profiles.find((p) => p.type === "socks5");
+
+        // reconnect
+        chrome.runtime.sendMessage({type: "Connect", data: socks5Profile});
+    }, [vmData])
 
     /* handle add event */
     const onAdd = useCallback(() => {
