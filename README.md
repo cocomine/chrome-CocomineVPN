@@ -1,6 +1,6 @@
 Cocomine VPN Extension 
 ===
-![Icon](/src/assets/extension.webp)
+![Icon](public/icon-192.png)
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/cocomine/chrome-vpn)
 

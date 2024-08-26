@@ -6,7 +6,9 @@ import jp_flag from "./assets/jp.svg";
 import us_flag from "./assets/us.svg";
 import hk_flag from "./assets/hk.svg";
 import uk_flag from "./assets/uk.svg";
+import in_flag from "./assets/in.svg";
 import dislink from "./assets/dislink.svg";
+import link from "./assets/link.svg";
 import {APP_VERSION} from "./index";
 import {countryType, useChatGPTOnlyData, useProxyData, VMDataType} from "./proxyData";
 import FormCheckInput from "react-bootstrap/FormCheckInput";
@@ -40,7 +42,7 @@ function App() {
         <>
             <Row className={"g-0"}>
                 <Col>
-                    <LinkStatus connectedProp={connected} countryProp={country} onDisconnect={onDisconnect}/>
+                    <LinkStatus connectedProp={connected} countryProp={country} onDisconnect={onDisconnect} vmName={vmData?._name ?? country}/>
                     {vmData && <TimeLast vmData={vmData}/>}
                     <ChatGPTOnly/>
                 </Col>
@@ -70,8 +72,9 @@ function App() {
 const LinkStatus: React.FC<{
     connectedProp: boolean,
     countryProp: countryType | null,
+    vmName: string | null,
     onDisconnect: () => void
-}> = ({connectedProp, countryProp, onDisconnect}) => {
+}> = ({connectedProp, countryProp, vmName, onDisconnect}) => {
     const [connected, setConnected] = useState(connectedProp);
     const [country, setCountry] = useState<countryType | null>(countryProp);
     const [msg, setMsg] = useState<string | null>('未連線');
@@ -89,9 +92,13 @@ const LinkStatus: React.FC<{
                 return <img src={hk_flag} alt="HK Flag" className="flag" draggable={false}/>;
             case "UK":
                 return <img src={uk_flag} alt="UK Flag" className="flag" draggable={false}/>;
-            default:
+            case "IN":
+                return <img src={in_flag} alt="IN Flag" className="flag" draggable={false}/>;
+            case null:
                 return <img src={dislink} alt="Disconnect" className="flag"
                             style={{padding: "1.5rem", overflow: 'visible'}} draggable={false}/>;
+            default:
+                return <img src={link} alt="Connected" className="flag" draggable={false}/>;
         }
     }, [country]);
 
@@ -102,15 +109,15 @@ const LinkStatus: React.FC<{
 
     // toggle mouse leave event
     const onMouseLeave = useCallback(() => {
-        setMsg(connected ? "已連接" + country + "節點" : "未連線")
-    }, [connected, country]);
+        setMsg(connected ? `已連接${country}(${vmName})節點` : "未連線")
+    }, [connected, country, vmName]);
 
     // update state when props changed
     useEffect(() => {
         setCountry(countryProp)
         setConnected(connectedProp)
-        setMsg(connectedProp ? "已連接" + countryProp + "節點" : "未連線")
-    }, [connectedProp, countryProp]);
+        setMsg(connectedProp ? `已連接${countryProp}(${vmName})節點` : "未連線")
+    }, [connectedProp, countryProp, vmName]);
 
     return (
         <div className="section glow">

@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
  * Type definition for the country.
  * @typedef {("TW" | "JP" | "US" | "HK" | string)} country
  */
-type countryType = "TW" | "JP" | "US" | "HK" | "UK" | string
+type countryType = "TW" | "JP" | "US" | "HK" | "UK" | "IN" | string
 /**
  * Type definition for the provider.
  * @typedef {("google" | "azure")} provider
