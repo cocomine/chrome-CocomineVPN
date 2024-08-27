@@ -4,7 +4,7 @@ import './index.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-const APP_VERSION = "0.2.1";
+const APP_VERSION = "0.2.2";
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
