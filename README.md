@@ -48,3 +48,10 @@ Update Log
 0.2.0
 ---
 + 增加自訂代理規則功能
+
+0.2.3
+---
++ 更換擴充插件圖標, 請認準新圖標
+
+![Icon](public/icon-192.png)
+![action-icon](public/action-icon.png)
