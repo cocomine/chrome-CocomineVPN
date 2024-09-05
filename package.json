@@ -1,6 +1,6 @@
 {
-  "name": "react-ui",
-  "version": "0.2.3",
+  "name": "chrome-cocominevpn",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",

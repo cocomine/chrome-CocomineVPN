@@ -1,19 +1,16 @@
 import {Button, ButtonGroup, CloseButton, Col, Form, Modal, Row} from "react-bootstrap";
 import React, {CSSProperties, useCallback, useEffect, useMemo, useState} from "react";
 import Scrollbar, {positionValues} from "react-custom-scrollbars";
-import {
-    AddURLModalProps,
-    ListType,
-    ProxyMode,
-    URLSelectorProps,
-    useBlackWhiteListData,
-    useProxyMode
-} from "./blackWhiteListData";
+import useBlackWhiteListData, {AddURLModalProps, ListType, URLSelectorProps} from "../hooks/useBlackWhiteListData";
 import DynamicText from "./DynamicText";
-import {useProxyData} from "./proxyData";
+import useProxyData from "../hooks/useProxyData";
+import useProxyMode, {ProxyMode} from "../hooks/useProxyMode";
 
-const colors = ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"] //colors for the glow effect
+const COLORS_LIST = ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"] //colors for the rainbow effect
 
+/**
+ * Component for managing the Black and White list of URLs.
+ */
 const BlackWhiteList = () => {
 
     const {vmData} = useProxyData();
@@ -154,7 +151,15 @@ const BlackWhiteList = () => {
 }
 
 /**
- * Dynamic effect URL selector
+ * URLSelector component
+ *
+ * This component allows users to select parts of a URL by clicking on them.
+ * It highlights the parts of the URL based on hover and selection states.
+ *
+ * @param {URLSelectorProps} props - The properties for the URLSelector component.
+ * @param {string} props.value - The URL value to be displayed and interacted with.
+ * @param {function} props.onSelect - Callback function to handle the selection of a URL part.
+ * @param {function} [props.onHover] - Optional callback function to handle hovering over a URL part.
  */
 const URLSelector: React.FC<URLSelectorProps> = ({value, onSelect, onHover}) => {
 
@@ -200,7 +205,7 @@ const URLSelector: React.FC<URLSelectorProps> = ({value, onSelect, onHover}) => 
         return (
             <>
                 {host.map((part, index) => {
-                    const color = hoverIndex <= index ? colors[(hoverIndex < 0 ? index : hoverIndex) % colors.length] : 'inherit'
+                    const color = hoverIndex <= index ? COLORS_LIST[(hoverIndex < 0 ? index : hoverIndex) % COLORS_LIST.length] : 'inherit'
 
                     return (
                         <span key={index}
@@ -226,7 +231,14 @@ const URLSelector: React.FC<URLSelectorProps> = ({value, onSelect, onHover}) => 
 }
 
 /**
- * Component for adding URLs to either a whitelist or a blacklist.
+ * AddURLModal component
+ *
+ * This component provides a modal dialog for adding URLs to either a whitelist or a blacklist.
+ *
+ * @param {AddURLModalProps} props - The properties for the AddURLModal component.
+ * @param {boolean} props.show - Determines whether the modal is visible.
+ * @param {function} props.onHide - Callback function to hide the modal.
+ * @param {string} props.url - The URL to be added to the list.
  */
 const AddURLModal: React.FC<AddURLModalProps> = ({show, onHide, url}) => {
 

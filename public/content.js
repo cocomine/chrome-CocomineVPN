@@ -5,7 +5,7 @@ window.addEventListener('message', async function (e) {
 
     // Check if the extension is installed
     if (e.data.type === "ExtensionInstalled" && e.data.ask) {
-        window.postMessage({type: "ExtensionInstalled", ask: false, data: {installed: true}});
+        window.postMessage({type: "ExtensionInstalled", ask: false, data: {installed: true, version: chrome.runtime.getManifest().version}});
     }
 
     // Receive the Connect message
@@ -28,3 +28,4 @@ window.addEventListener('message', async function (e) {
 
     }
 });
+
