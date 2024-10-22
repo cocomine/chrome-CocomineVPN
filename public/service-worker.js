@@ -1,3 +1,4 @@
+// The `onInstalled` event listener is used to open the README.md file on GitHub when the extension is installed or updated.
 chrome.runtime.onInstalled.addListener(({reason}) => {
     if (reason === 'install') {
         chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md'});

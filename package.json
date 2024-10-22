@@ -45,11 +45,11 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@types/chrome": "^0.0.266",
+    "@types/chrome": "^0.0.279",
     "@types/react": "^18.2.79",
     "@types/react-custom-scrollbars": "^4.0.13",
     "@types/react-dom": "^18.2.25",
-    "chrome-types": "^0.1.281",
+    "chrome-types": "^0.1.311",
     "copyfiles": "^2.4.1"
   }
 }
