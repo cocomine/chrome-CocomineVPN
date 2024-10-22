@@ -1,27 +1,174 @@
-// The `onInstalled` event listener is used to open the README.md file on GitHub when the extension is installed or updated.
+const API_URL = 'https://api.cocomine.cc'; // The API URL
+
+/**
+ * Event listener for the `onInstalled` event.
+ * This event is triggered when the extension is installed or updated.
+ * Depending on the reason for the event, it opens the README.md file on GitHub.
+ */
 chrome.runtime.onInstalled.addListener(({reason}) => {
     if (reason === 'install') {
         chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md'});
     } else if (reason === 'update') {
-        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#023'});
+        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#100'});
     }
 });
 
+/**
+ * Event listener for the `onAlarm` event.
+ * This event is triggered when an alarm goes off.
+ * Specifically, it checks if the VPN will close soon, every 30 minutes.
+ */
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'offline-time-check') {
+        // Get the vmData from chrome.storage.local
+        chrome.storage.local.get('vmData', (data) => {
+            //console.debug(data) //debug
+            if (!data.vmData) return;
 
-// The `onMessage` event listener is used to receive messages from the content script.
+            //check if have 30min time left
+            const expired = new Date(data.vmData._expired).getTime()
+            if (expired - Date.now() < 30 * 60 * 1000) {
+                // notify user
+                chrome.notifications.clear('offlineTimeNotify');
+                chrome.notifications.create('offlineTimeNotify', {
+                    type: 'basic',
+                    iconUrl: 'icon-128.png',
+                    title: 'VPN節點即將關閉',
+                    message: `${data.vmData._country}(${data.vmData._name}) VPN節點即將30分鐘內關閉。如有需要請點擊延長開放時間。`,
+                    buttons: [{title: '延長開放時間'}]
+                });
+
+                //clear alarms
+                chrome.alarms.clear('offline-time-check');
+            }
+        });
+    }
+});
+
+/**
+ * Event listener for the `onClicked` event.
+ * This event is triggered when a notification is clicked.
+ * Specifically, it handles the click event for the 'offlineTimeNotify' notification.
+ */
+chrome.notifications.onClicked.addListener((notificationId) => {
+    if (notificationId === 'offlineTimeNotify') {
+        // Get the vmData from chrome.storage.local
+        chrome.storage.local.get('vmData', (data) => {
+            //console.debug(data) //debug
+            if (!data.vmData) return;
+
+            // open the web page
+            chrome.tabs.create({url: `https://vpn.cocomine.cc/${data.vmData._id}`});
+        });
+    }
+});
+
+/**
+ * Event listener for the `onButtonClicked` event.
+ * This event is triggered when a notification button is clicked.
+ * Specifically, it handles the button click event for the 'offline-time-check' notification.
+ */
+chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+    if (notificationId === 'offlineTimeNotify' && buttonIndex === 0) {
+        // Get the vmData from chrome.storage.local
+        chrome.storage.local.get('vmData', (data) => {
+            //console.debug(data) //debug
+            if (!data.vmData) return;
+
+            // open the web page
+            chrome.tabs.create({url: `https://vpn.cocomine.cc/${data.vmData._id}`});
+        });
+    }
+});
+
+/**
+ * Event listener for the `onMessage` event.
+ * This event is triggered when a message is sent from the content script.
+ * Specifically, it handles the 'Connect' message type to set up a proxy configuration.
+ *
+ * @param {Object} message - The message object sent from the content script.
+ * @param {string} message.type - The type of the message.
+ * @param {Object} message.data - The data associated with the message.
+ * @param {string} message.data.url - The URL for the proxy configuration.
+ * @param {Object} sender - The sender of the message.
+ * @param {Function} sendResponse - The function to send a response back to the sender.
+ */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.debug(message);
 
     if (message.type === 'Connect') {
 
         create_config(message.data.url, (config) => {
-            console.debug(config); //debug
+            //console.debug(config); //debug
             chrome.proxy.settings.set({value: config, scope: "regular"}, () => {
-                sendResponse({connected: true});
+
+                // every 1s, send request to /ping to check if the proxy is connected
+                // terminate after 60s if not connected
+                let tryCount = 0;
+                const interval = setInterval(() => {
+                    fetch(`${API_URL}/ping`, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }).then((response) => {
+                        if (response.ok) {
+                            clearInterval(interval);
+                            sendResponse({connected: true});
+
+                            // Notify the user that the connection is successful
+                            chrome.notifications.clear('connectedNotify');
+                            chrome.notifications.create('connectedNotify', {
+                                type: 'basic',
+                                iconUrl: 'icon-128.png',
+                                title: '成功連接',
+                                message: '已成功連接到節點!',
+                            });
+
+                            // set up every 30min alarms, check how many times left
+                            chrome.alarms.clearAll();
+                            chrome.alarms.create('offline-time-check', {periodInMinutes: 30});
+                        }else{
+                            tryCount++;
+                            if(tryCount >= 60){
+                                sendResponse({connected: false});
+                                clearInterval(interval);
+                            }
+                        }
+                    }).catch(() => {
+                        tryCount++;
+                        if(tryCount >= 60){
+                            sendResponse({connected: false});
+                            clearInterval(interval);
+                        }
+                    });
+                }, 1000);
             });
         })
         return true
     }
+});
+
+/**
+ * Event listener for the `onStartup` event.
+ * This event is triggered when the browser starts up.
+ * It checks if the `vmData` has expired and clears the proxy settings if it has.
+ */
+chrome.runtime.onStartup.addListener(() => {
+    // Get the vmData from chrome.storage.local
+    chrome.storage.local.get('vmData', (data) => {
+        console.debug(data) //debug
+        if (!data.vmData) return;
+
+        const expired = new Date(data.vmData._expired).getTime()
+        if (expired < Date.now()) {
+            // clear proxy settings
+            chrome.proxy.settings.clear({}, () => {
+                chrome.storage.local.remove('vmData');
+            });
+        }
+    });
 });
 
 // The `create_config` function is used to create a proxy configuration.
@@ -65,23 +212,6 @@ function create_config(proxy_url, callback) {
         }
     });
 }
-
-// The `onStartup` event listener is used to check if the vmData has expired.
-chrome.runtime.onStartup.addListener(() => {
-    // Get the vmData from chrome.storage.local
-    chrome.storage.local.get('vmData', (data) => {
-        console.debug(data) //debug
-        if (!data.vmData) return;
-
-        const expired = new Date(data.vmData._expired).getTime()
-        if (expired < Date.now()) {
-            // clear proxy settings
-            chrome.proxy.settings.clear({}, () => {
-                chrome.storage.local.remove('vmData');
-            });
-        }
-    });
-});
 
 // create a PAC script that routes traffic through the SOCKS5 proxy for openai.com and chatgpt.com
 function create_pac_script(proxy_url) {
