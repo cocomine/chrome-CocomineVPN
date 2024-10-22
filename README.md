@@ -55,3 +55,8 @@ Update Log
 
 ![Icon](public/icon-192.png)
 ![action-icon](public/action-icon.png)
+
+1.1.0
+---
++ 增加連接檢查
++ 增加即將離線通知
