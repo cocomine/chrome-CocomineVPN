@@ -10,6 +10,7 @@ import dislink from "../assets/dislink.svg";
 import link from "../assets/link.svg";
 import {Col, Row} from "react-bootstrap";
 
+
 /**
  * LinkStatus component
  *
@@ -69,7 +70,7 @@ export const LinkStatus: React.FC<{
     useEffect(() => {
         setCountry(countryProp)
         setConnected(connectedProp)
-        setMsg(connectedProp ? `已連接${countryProp}(${vmName})節點` : "未連線")
+        setMsg(connectedProp ? (countryProp === null ? "連線中" : `已連接${countryProp}(${vmName})節點`) : "未連線")
     }, [connectedProp, countryProp, vmName]);
 
     return (

@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
     if (reason === 'install') {
         chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md'});
     } else if (reason === 'update') {
-        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#110'});
+        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#115'});
     }
 });
 
@@ -93,25 +93,28 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
  * @param {Object} sender - The sender of the message.
  * @param {Function} sendResponse - The function to send a response back to the sender.
  */
+let interval;
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.debug(message);
+    console.debug(message); //debug
 
+    // Receive the Connect message
     if (message.type === 'Connect') {
 
         create_config(message.data.url, (config) => {
-            //console.debug(config); //debug
+            console.debug(config); //debug
             chrome.proxy.settings.set({value: config, scope: "regular"}, () => {
 
                 // every 1s, send request to /ping to check if the proxy is connected
                 // terminate after 60s if not connected
                 let tryCount = 0;
-                const interval = setInterval(() => {
+                interval && clearInterval(interval);
+                interval = setInterval(() => {
                     fetch(`${API_URL}/ping`, {
                         method: 'GET',
-                        mode: 'cors',
                         headers: {
                             'Content-Type': 'application/json',
                         },
+                        signal: AbortSignal.timeout(1000)
                     }).then((response) => {
                         if (response.ok) {
                             clearInterval(interval);
@@ -146,6 +149,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }, 1000);
             });
         })
+        return true
+    }
+
+    // Receive the Disconnect message
+    if (message.type === 'Disconnect') {
+        // clear proxy settings
+        chrome.proxy.settings.clear({}, () => {
+            // Remove the vmData from chrome.storage.local
+            chrome.storage.local.remove('vmData');
+
+            // Notify the user that the connection is disconnected
+            chrome.notifications.clear('disconnectedNotify');
+            chrome.notifications.create('disconnectedNotify', {
+                type: 'basic',
+                iconUrl: 'icon-128.png',
+                title: '已斷開連接',
+                message: '已成功斷開與節點的連接!',
+            });
+
+            // clear alarms
+            chrome.alarms.clearAll();
+
+            // send response
+            sendResponse({connected: false});
+        });
         return true
     }
 });
@@ -216,19 +244,21 @@ function create_config(proxy_url, callback) {
 // create a PAC script that routes traffic through the SOCKS5 proxy for openai.com and chatgpt.com
 function create_pac_script(proxy_url) {
     return `function FindProxyForURL(url, host) {
-        if (dnsDomainIs(host, "openai.com") || dnsDomainIs(host, "chatgpt.com")){
+        alert(url);
+        alert(shExpMatch(url, "*api.cocomine.cc/ping"));
+        if (dnsDomainIs(host, "openai.com") || dnsDomainIs(host, "chatgpt.com") || dnsDomainIs(host, "api.cocomine.cc")){
             return "SOCKS5 ${proxy_url}";
         }
         return "DIRECT";
-    }`;
+    }`.replaceAll('\n', '');
 }
 
 // create a PAC script that routes traffic through the SOCKS5 proxy for custom url list
 function create_pac_script_custom_rule(proxy_url, proxy_mode, url_list) {
     return `function FindProxyForURL(url, host) {
-        if (${proxy_mode === 'whitelist' ? url_list.map((url) => `shExpMatch(host, "${url}")`).join(' || ') : url_list.map((url) => `!shExpMatch(host, "${url}")`).join(' && ')}){
+        if (dnsDomainIs(host, "api.cocomine.cc") || ${proxy_mode === 'whitelist' ? url_list.map((url) => `shExpMatch(host, "${url}")`).join(' || ') : url_list.map((url) => `!shExpMatch(host, "${url}")`).join(' && ')}){
             return "SOCKS5 ${proxy_url}";
         }
         return "DIRECT";
-    }`;
+    }`.replaceAll('\n', '');
 }

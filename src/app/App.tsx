@@ -8,6 +8,7 @@ import {TimeLast} from "../components/TimeLast";
 import {ChatGPTOnly} from "../components/ChatGPTOnly";
 import {APP_VERSION} from "../constants/GlobalVariable";
 
+
 /**
  * App component
  *
@@ -24,13 +25,12 @@ function App() {
         if (connected) {
             // disconnect
             // check if chrome.proxy and chrome.storage is undefined
-            if (chrome.proxy === undefined || chrome.storage === undefined) return
+            if (chrome.runtime === undefined) return
 
-            // clear proxy settings
-            chrome.proxy.settings.clear({}, () => {
-                chrome.storage.local.remove('vmData');
-                audio.play()
-            });
+            const res = await chrome.runtime.sendMessage({type: "Disconnect", data: vmData});
+            if (res.connected === false) {
+                audio.play();
+            }
         } else {
             // open vpn.cocomine.cc
             window.open('https://vpn.cocomine.cc', '_blank')
