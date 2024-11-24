@@ -10,11 +10,9 @@ window.addEventListener('message', async function (e) {
 
     // Receive the Connect message
     if (e.data.type === "Connect" && e.data.ask) {
-        const socks5Profile = e.data.data._profiles.find((p) => p.type === "socks5");
-        chrome.runtime.sendMessage({type: "Connect", data: socks5Profile}, function (response) {
+        chrome.runtime.sendMessage({type: "Connect", data: e.data.data}, function (response) {
             //console.debug("Content script > Connect", response); //debug
             window.postMessage({type: "Connect", ask: false, data:{connected: response.connected}});
-            chrome.storage.local.set({vmData: e.data.data})
         });
     }
 

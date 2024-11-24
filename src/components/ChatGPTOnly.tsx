@@ -5,6 +5,7 @@ import FormCheckInput from "react-bootstrap/FormCheckInput";
 import useProxyMode from "../hooks/useProxyMode";
 import useChatGPTOnlyData from "../hooks/useChatGPTOnlyData";
 
+
 /**
  * ChatGPTOnly component
  *
@@ -22,10 +23,9 @@ export const ChatGPTOnly: React.FC = () => {
         chrome.storage.local.set({chatGPTOnly: !chatGPTOnly}) // toggle chatGPTOnly
 
         if (vmData === null) return;
-        const socks5Profile = vmData._profiles.find((p) => p.type === "socks5");
 
         // reconnect
-        chrome.runtime.sendMessage({type: "Connect", data: socks5Profile});
+        chrome.runtime.sendMessage({type: "Connect", data: vmData});
     }, [chatGPTOnly, vmData])
 
     return (

@@ -6,6 +6,7 @@ import DynamicText from "./DynamicText";
 import useProxyData from "../hooks/useProxyData";
 import useProxyMode, {ProxyMode} from "../hooks/useProxyMode";
 
+
 const COLORS_LIST = ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"] //colors for the rainbow effect
 
 /**
@@ -54,10 +55,9 @@ const BlackWhiteList = () => {
         });
 
         if (vmData === null) return;
-        const socks5Profile = vmData._profiles.find((p) => p.type === "socks5");
 
         // reconnect
-        chrome.runtime.sendMessage({type: "Connect", data: socks5Profile});
+        chrome.runtime.sendMessage({type: "Connect", data: vmData});
     }, [vmData])
 
     /* handle add event */

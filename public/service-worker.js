@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
     if (reason === 'install') {
         chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md'});
     } else if (reason === 'update') {
-        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#115'});
+        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#116'});
     }
 });
 
@@ -100,7 +100,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Receive the Connect message
     if (message.type === 'Connect') {
 
-        create_config(message.data.url, (config) => {
+        const socks5Profile = message.data._profiles.find((p) => p.type === "socks5");
+        create_config(socks5Profile.url, (config) => {
             console.debug(config); //debug
             chrome.proxy.settings.set({value: config, scope: "regular"}, () => {
 
@@ -119,6 +120,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         if (response.ok) {
                             clearInterval(interval);
                             sendResponse({connected: true});
+
+                            // Save the vmData to chrome.storage.local
+                            chrome.storage.local.set({vmData: message.data});
 
                             // Notify the user that the connection is successful
                             chrome.notifications.clear('connectedNotify');
