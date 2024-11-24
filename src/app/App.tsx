@@ -36,7 +36,7 @@ function App() {
             window.open('https://vpn.cocomine.cc', '_blank')
             return
         }
-    }, [connected, audio]);
+    }, [connected, audio, vmData]);
 
     return (
         <>
