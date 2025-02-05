@@ -72,3 +72,8 @@ Update Log
 1.1.7
 ---
 + 安全性修補
+
+1.1.8
+---
++ 時間延長點擊後將直接延長時間, 不再需要在網頁再次點擊
++ ChatGPT Only Mode 更變名稱為 OpenAI Mode, 並添加 sora.com 代理

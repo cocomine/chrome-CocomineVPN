@@ -250,7 +250,7 @@ function create_pac_script(proxy_url) {
     return `function FindProxyForURL(url, host) {
         alert(url);
         alert(shExpMatch(url, "*api.cocomine.cc/ping"));
-        if (dnsDomainIs(host, "openai.com") || dnsDomainIs(host, "chatgpt.com") || dnsDomainIs(host, "api.cocomine.cc")){
+        if (dnsDomainIs(host, "openai.com") || dnsDomainIs(host, "chatgpt.com") || dnsDomainIs(host, "api.cocomine.cc") || dnsDomainIs(host, "sora.com")){
             return "SOCKS5 ${proxy_url}";
         }
         return "DIRECT";

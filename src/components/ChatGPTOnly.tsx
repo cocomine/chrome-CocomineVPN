@@ -42,11 +42,11 @@ export const ChatGPTOnly: React.FC = () => {
             }
             <Row className="justify-content-center align-content-center">
                 <Col xs={'auto'}>
-                    <h5>ChatGPT Only Mode</h5>
+                    <h5>OpenAI Mode</h5>
                 </Col>
                 <div className="w-100"></div>
                 <Col xs={'auto'}>
-                    <small className="text-muted text-center"><p>開啟後只代理chatgpt.com和openai.com的網站</p></small>
+                    <small className="text-muted text-center"><p>開啟後只代理chatgpt.com, openai.com, sora.com的網站</p></small>
                 </Col>
                 <Col xs={'auto'}>
                     <FormCheck type="switch" id="chatGPTOnly">
