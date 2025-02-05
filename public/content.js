@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 window.addEventListener('message', async function (e) {
     // We only accept messages from ourselves
     if (e.source !== window) return;

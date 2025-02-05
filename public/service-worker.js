@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const API_URL = 'https://api.cocomine.cc'; // The API URL
 
 /**
@@ -27,7 +28,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
             //check if have 30min time left
             const expired = new Date(data.vmData._expired).getTime()
-            if (expired - Date.now() < 30 * 60 * 1000) {
+            if (expired - Date.now() < 60 * 60 * 1000) {
                 // notify user
                 chrome.notifications.clear('offlineTimeNotify');
                 chrome.notifications.create('offlineTimeNotify', {
@@ -135,7 +136,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                             // set up every 30min alarms, check how many times left
                             chrome.alarms.clearAll();
-                            chrome.alarms.create('offline-time-check', {periodInMinutes: 30});
+                            const expired = new Date(message.data._expired).getTime()
+                            chrome.alarms.create('offline-time-check', {periodInMinutes: 15, when: expired - 60 * 60 * 1000});
                         }else{
                             tryCount++;
                             if(tryCount >= 60){
