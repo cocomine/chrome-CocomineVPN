@@ -51,7 +51,7 @@ export const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
                 </Col>
                 <Col xs={12}>
                     <Button variant={enableExtend ? "primary" : "outline-primary"}
-                            className="w-100 rounded-5" href={"https://vpn.cocomine.cc/" + vmData._id} target="_blank"
+                            className="w-100 rounded-5" href={"https://vpn.cocomine.cc/" + vmData._id + "#extendTime"} target="_blank"
                             disabled={!enableExtend}>
                         {enableExtend ? "延長開放時間" : "離線前一小時可以延長開放時間"}
                     </Button>

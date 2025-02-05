@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
     if (reason === 'install') {
         chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md'});
     } else if (reason === 'update') {
-        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#117'});
+        chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#118'});
     }
 });
 
@@ -58,7 +58,7 @@ chrome.notifications.onClicked.addListener((notificationId) => {
             if (!data.vmData) return;
 
             // open the web page
-            chrome.tabs.create({url: `https://vpn.cocomine.cc/${data.vmData._id}`});
+            chrome.tabs.create({url: `https://vpn.cocomine.cc/${data.vmData._id}#extendTime`});
         });
     }
 });
@@ -76,7 +76,7 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
             if (!data.vmData) return;
 
             // open the web page
-            chrome.tabs.create({url: `https://vpn.cocomine.cc/${data.vmData._id}`});
+            chrome.tabs.create({url: `https://vpn.cocomine.cc/${data.vmData._id}#extendTime`});
         });
     }
 });
