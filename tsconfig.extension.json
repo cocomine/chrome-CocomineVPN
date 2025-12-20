@@ -3,17 +3,21 @@
   "compilerOptions": {
     "target": "es2020",
     "lib": ["es2021", "dom", "webworker"],
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "outDir": "public",
     "allowJs": false,
     "noEmit": false,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "skipLibCheck": true,
     "sourceMap": false,
     "rootDir": "src/extension",
-    "types": ["chrome"]
+    "types": ["chrome"],
+    "useDefineForClassFields": false,
   },
-  "include": ["src/extension/**/*"],
+  "include": [
+    "src/extension/**/*"
+  ],
   "exclude": ["node_modules", "src/**/*.test.ts"]
 }

@@ -21,7 +21,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build && npm run build:extension",
+    "build": "rm -r build || npm run build:extension && craco build",
     "build:extension": "tsc -p tsconfig.extension.json",
     "start:extension": "tsc -p tsconfig.extension.json --watch",
     "test": "craco test",

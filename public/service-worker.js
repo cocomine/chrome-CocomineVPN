@@ -1,4 +1,7 @@
-import { createProxyConfig } from './worker/proxy';
+import { createProxyConfig } from "./createProxyConfig.js";
+// Import the proxy script
+// declare const self: ServiceWorkerGlobalScope & typeof globalThis;
+// self.importScripts(chrome.runtime.getURL('worker/proxy.js'));
 const API_URL = 'https://api.cocomine.cc';
 let pingInterval;
 chrome.runtime.onInstalled.addListener(({ reason }) => {

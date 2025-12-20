@@ -1,5 +1,10 @@
-import { createProxyConfig } from './worker/proxy';
+/// <reference lib="webworker" />
 import type {RuntimeMessage, StoredVmData} from './types';
+import {createProxyConfig} from "./createProxyConfig.js";
+
+// Import the proxy script
+// declare const self: ServiceWorkerGlobalScope & typeof globalThis;
+// self.importScripts(chrome.runtime.getURL('worker/proxy.js'));
 
 const API_URL = 'https://api.cocomine.cc';
 let pingInterval: number | undefined;

@@ -1,4 +1,4 @@
-import type { ProxyFlags, ProxyMode, VMData } from '../types';
+import type { ProxyFlags, ProxyMode, VMData } from './types';
 
 export interface ProxyConfigResult {
   config: chrome.proxy.ProxyConfig;

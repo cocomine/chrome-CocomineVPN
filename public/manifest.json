@@ -28,12 +28,12 @@
     "http://localhost:3000/*"
   ],
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "service-worker.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "js": ["content.js"],
+      "js": ["content.js", "shared.js"],
       "matches": [
         "*://*.vpn.cocomine.cc/*",
         "http://localhost:3000/*"
