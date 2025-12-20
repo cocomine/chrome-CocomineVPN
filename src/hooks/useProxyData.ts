@@ -1,4 +1,6 @@
 import {useEffect, useState} from "react";
+import ChromeSettingOnChangeDetails = chrome.types.ChromeSettingOnChangeDetails;
+import ProxyConfig = chrome.proxy.ProxyConfig;
 
 /**
  * Type definition for the country.
@@ -97,7 +99,7 @@ export default function useProxyData() {
         });
 
         // Add listener for changes in proxy settings
-        const listener = (details: chrome.types.ChromeSettingGetResultDetails):void => {
+        const listener = (details:  ChromeSettingOnChangeDetails<ProxyConfig>):void => {
             console.debug(details) //debug
             const value = details.value
 
@@ -128,9 +130,9 @@ export default function useProxyData() {
         if(chrome.storage === undefined) return;
 
         // Get the vmData from chrome.storage.local
-        chrome.storage.local.get('vmData', (data) => {
+        chrome.storage.local.get<{ vmData?: VMDataType }>('vmData', (data) => {
             console.debug(data) //debug
-            setVmData(data.vmData)
+            setVmData(data.vmData ?? null)
             setCountry(data.vmData?._country || null)
         });
 
@@ -138,8 +140,9 @@ export default function useProxyData() {
         const listener = (changes: {[p: string]: chrome.storage.StorageChange}):void => {
             console.debug(changes) //debug
             if (changes.vmData) {
-                setVmData(changes.vmData.newValue)
-                setCountry(changes.vmData.newValue._country || null);
+                const nextVmData = changes.vmData.newValue as VMDataType | undefined;
+                setVmData(nextVmData ?? null)
+                setCountry(nextVmData?._country || null);
             }
         }
         chrome.storage.onChanged.addListener(listener);

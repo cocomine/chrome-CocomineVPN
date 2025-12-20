@@ -17,14 +17,14 @@ export default function useChatGPTOnlyData() {
         // Get the chatGPTOnly from chrome.storage.local
         chrome.storage.local.get('chatGPTOnly', (data) => {
             console.debug(data) //debug
-            setChatGPTOnly(data.chatGPTOnly)
+            setChatGPTOnly(data.chatGPTOnly as any)
         });
 
         // Add listener for changes in chatGPTOnly
         const listener = (changes: { [p: string]: chrome.storage.StorageChange }): void => {
             console.debug(changes) //debug
             if (changes.chatGPTOnly) {
-                setChatGPTOnly(changes.chatGPTOnly.newValue)
+                setChatGPTOnly(changes.chatGPTOnly.newValue as any)
             }
         }
         chrome.storage.onChanged.addListener(listener);

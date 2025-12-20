@@ -1,38 +1,36 @@
-/* eslint-disable no-undef */
-window.addEventListener('message', async function (e) {
-    // We only accept messages from ourselves
-    if (e.source !== window) return;
-    console.debug("Content script > message", e.data); //debug
-
-    // Check if the extension is installed
-    if (e.data.type === "ExtensionInstalled" && e.data.ask) {
-        window.postMessage({type: "ExtensionInstalled", ask: false, data: {installed: true, version: chrome.runtime.getManifest().version}});
+import { ensureRuntimeReady, postToPage } from './shared';
+window.addEventListener('message', async (event) => {
+    if (event.source !== window)
+        return;
+    const message = event.data;
+    if (!message?.type)
+        return;
+    await ensureRuntimeReady();
+    if (message.type === 'ExtensionInstalled' && message.ask) {
+        postToPage({ type: 'ExtensionInstalled', ask: false, data: { installed: true, version: chrome.runtime.getManifest().version } });
+        return;
     }
-
-    // Receive the Connect message
-    if (e.data.type === "Connect" && e.data.ask) {
-        chrome.runtime.sendMessage({type: "Connect", data: e.data.data}, function (response) {
-            //console.debug("Content script > Connect", response); //debug
-            window.postMessage({type: "Connect", ask: false, data:{connected: response.connected}});
+    if (message.type === 'Connect' && message.ask) {
+        chrome.runtime.sendMessage({ type: 'Connect', data: message.data }, (response) => {
+            postToPage({ type: 'Connect', ask: false, data: { connected: Boolean(response?.connected) } });
         });
+        return;
     }
-
-    // Receive the PostVMData message
-    if (e.data.type === "PostVMData" && !e.data.ask) {
-        chrome.storage.local.get('vmData', (data) => {
-            //console.debug("Content script > PostVMData", data) //debug
-            if (!data.vmData) return
-            const vmData = e.data.data.find((d) => d._id === data.vmData._id)
-
-            if(vmData._isPowerOn){
-                // If the VM is powered on, save the data to chrome.storage.local
-                chrome.storage.local.set({vmData})
-            }else{
-                // If the VM is powered off, send the data to service worker
-                chrome.runtime.sendMessage({type: "Disconnect", data: vmData});
+    if (message.type === 'PostVMData' && !message.ask) {
+        chrome.storage.local.get('vmData', (stored) => {
+            const storedVm = stored.vmData;
+            if (!storedVm)
+                return;
+            const incomingVm = findVmById(message.data, storedVm._id);
+            if (!incomingVm)
+                return;
+            if (incomingVm._isPowerOn) {
+                chrome.storage.local.set({ vmData: incomingVm });
+            }
+            else {
+                chrome.runtime.sendMessage({ type: 'Disconnect', data: incomingVm });
             }
         });
-
     }
 });
-
+const findVmById = (list, id) => list.find((entry) => entry?._id === id);

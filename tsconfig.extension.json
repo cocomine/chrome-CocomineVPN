@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2021", "dom", "webworker"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "outDir": "public",
+    "allowJs": false,
+    "noEmit": false,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "rootDir": "src/extension",
+    "types": ["chrome"]
+  },
+  "include": ["src/extension/**/*"],
+  "exclude": ["node_modules", "src/**/*.test.ts"]
+}

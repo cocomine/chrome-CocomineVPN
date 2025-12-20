@@ -51,14 +51,15 @@ export default function useBlackWhiteListData(type: ListType) {
         if (chrome.storage === undefined) return;
 
         // Get the list from chrome.storage.sync
-        chrome.storage.sync.get(type, (data) => {
+        chrome.storage.sync.get<Partial<Record<ListType, string[]>>>(type, (data) => {
             setData(data[type] ?? [])
         });
 
         // Add listener for changes in chatGPTOnly
         const listener = (changes: { [p: string]: chrome.storage.StorageChange }): void => {
             if (changes[type]) {
-                setData(changes[type].newValue)
+                const updated = changes[type].newValue;
+                setData(Array.isArray(updated) ? updated : []);
             }
         }
         chrome.storage.onChanged.addListener(listener);

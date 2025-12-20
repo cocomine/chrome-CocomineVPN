@@ -22,16 +22,17 @@ export default function useProxyMode() {
         if (chrome.storage === undefined) return;
 
         // Get the proxyMode from chrome.storage.local
-        chrome.storage.local.get('proxyMode', (data) => {
+        chrome.storage.local.get<{ proxyMode: ProxyMode }>('proxyMode', (data) => {
             console.debug(data) //debug
             setMode(data.proxyMode ?? 'disable')
         });
 
         // Add listener for changes in chatGPTOnly
-        const listener = (changes: { [p: string]: chrome.storage.StorageChange }): void => {
+        const listener = (changes: { [key: string]: chrome.storage.StorageChange }): void => {
             console.debug(changes) //debug
             if (changes.proxyMode) {
-                setMode(changes.proxyMode.newValue)
+                const nextMode = changes.proxyMode.newValue as ProxyMode | undefined;
+                setMode(nextMode ?? 'disable')
             }
         }
         chrome.storage.onChanged.addListener(listener);

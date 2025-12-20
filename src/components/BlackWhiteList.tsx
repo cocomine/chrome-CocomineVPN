@@ -28,8 +28,10 @@ const BlackWhiteList = () => {
         // Check if chrome.storage is available
         if (chrome.storage === undefined) return;
 
+        type StorageLists = Partial<Record<ProxyMode, string[]>>;
+
         // Get the list from chrome.storage.sync
-        chrome.storage.sync.get(mode, (data) => {
+        chrome.storage.sync.get<StorageLists>(mode, (data) => {
             const list = data[mode] ?? []
             // Remove the selected url from the list
             chrome.storage.sync.set({[mode]: list.filter((value: string) => value !== url)}, () => {
@@ -255,7 +257,7 @@ const AddURLModal: React.FC<AddURLModalProps> = ({show, onHide, url}) => {
         if (chrome.storage === undefined) return;
 
         //get the list from chrome.storage.sync
-        chrome.storage.sync.get(addListType, (data) => {
+        chrome.storage.sync.get<Partial<Record<ListType, string[]>>>(addListType, (data) => {
             const list: string[] = data[addListType] ?? []
             if (selectedURL && !list.includes(selectedURL)) list.push(selectedURL)
             if (!thisHostOnly && !list.includes('*.' + selectedURL)) list.push('*.' + selectedURL)
