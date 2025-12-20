@@ -1,39 +1,57 @@
-import { ensureRuntimeReady, postToPage } from './shared';
-import type { ExtensionMessage, StoredVmData, VMData } from './types';
+import {ensureRuntimeReady, postToPage} from './shared';
+import type {ExtensionMessage, StoredVmData, VMInstanceDataType} from './types';
 
+/**
+ * Listen for messages from the web page and handle them accordingly.
+ */
 window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>) => {
-  if (event.source !== window) return;
-  const message = event.data;
-  if (!message?.type) return;
+    if (event.source !== window) return; // Only accept messages from the same window
+    const message = event.data; // Extract the message data
+    if (!message?.type) return; // Ignore messages without a type
 
-  await ensureRuntimeReady();
+    await ensureRuntimeReady(); // Ensure the Chrome runtime is ready
 
-  if (message.type === 'ExtensionInstalled' && message.ask) {
-    postToPage({ type: 'ExtensionInstalled', ask: false, data: { installed: true, version: chrome.runtime.getManifest().version } });
-    return;
-  }
+    // Handle 'ExtensionInstalled' message
+    if (message.type === 'ExtensionInstalled' && message.ask) {
+        postToPage({
+            type: 'ExtensionInstalled',
+            ask: false,
+            data: {installed: true, version: chrome.runtime.getManifest().version}
+        });
+        return;
+    }
 
-  if (message.type === 'Connect' && message.ask) {
-    chrome.runtime.sendMessage({ type: 'Connect', data: message.data }, (response) => {
-      postToPage({ type: 'Connect', ask: false, data: { connected: Boolean(response?.connected) } });
-    });
-    return;
-  }
+    // Handle 'Connect' message
+    if (message.type === 'Connect' && message.ask) {
+        const response = await chrome.runtime.sendMessage({type: 'Connect', data: message.data})
+        postToPage({type: 'Connect', ask: false, data: {connected: Boolean(response?.connected)}});
+        return;
+    }
 
-  if (message.type === 'PostVMData' && !message.ask) {
-    chrome.storage.local.get('vmData', (stored: StoredVmData) => {
-      const storedVm = stored.vmData;
-      if (!storedVm) return;
-      const incomingVm = findVmById(message.data, storedVm._id);
-      if (!incomingVm) return;
+    // Handle 'PostVMData' message
+    if (message.type === 'PostVMData' && !message.ask) {
+        const stored = await chrome.storage.local.get<StoredVmData>('vmData');
+        const storedVm = stored.vmData; // Get the stored VM data
+        if (!storedVm) return; // No stored VM data found
 
-      if (incomingVm._isPowerOn) {
-        chrome.storage.local.set({ vmData: incomingVm });
-      } else {
-        chrome.runtime.sendMessage({ type: 'Disconnect', data: incomingVm });
-      }
-    });
-  }
+        // Find the incoming VM data that matches the stored VM ID
+        const incomingVm = findVmById(message.data, storedVm._id);
+        if (!incomingVm) return;
+
+        // Update storage or send disconnect message based on power state
+        if (incomingVm._isPowerOn) {
+            //todo: update alarms
+            await chrome.runtime.sendMessage({type: 'AlarmsUpdate', data: incomingVm}); // Send alarms update message
+        } else {
+            await chrome.runtime.sendMessage({type: 'Disconnect', data: incomingVm}); // Send disconnect message
+        }
+    }
 });
 
-const findVmById = (list: VMData[], id: string) => list.find((entry) => entry?._id === id);
+/**
+ * Find a VM by its ID in a list of VMs.
+ * @param list - The list of VMs to search.
+ * @param id - The ID of the VM to find.
+ * @returns The VM with the matching ID, or undefined if not found.
+ */
+const findVmById = (list: VMInstanceDataType[], id: string) => list.find((entry) => entry?._id === id);
