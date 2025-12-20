@@ -11,7 +11,7 @@
     "noEmit": false,
     "isolatedModules": false,
     "skipLibCheck": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "rootDir": "src/extension",
     "types": ["chrome"],
     "useDefineForClassFields": false,

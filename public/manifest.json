@@ -33,7 +33,7 @@
   },
   "content_scripts": [
     {
-      "js": ["content.js", "shared.js"],
+      "js": ["shared.js","content.js"],
       "matches": [
         "*://*.vpn.cocomine.cc/*",
         "http://localhost:3000/*"

@@ -1,13 +1,8 @@
-/// <reference lib="webworker" />
 import type {RuntimeMessage, StoredVmData} from './types';
 import {createProxyConfig} from "./createProxyConfig.js";
 
-// Import the proxy script
-// declare const self: ServiceWorkerGlobalScope & typeof globalThis;
-// self.importScripts(chrome.runtime.getURL('worker/proxy.js'));
-
-const API_URL = 'https://api.cocomine.cc';
-let pingInterval: number | undefined;
+const API_URL = 'https://api.cocomine.cc'; // API endpoint, in this time is only for ping test
+let pingInterval: number | undefined; // To hold the interval ID for pinging
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
