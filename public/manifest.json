@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Cocomine VPN Extension",
   "description": "Cocomine VPN 瀏覽器擴展, 控制瀏覽器代理設定",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "icons": {
     "16": "icon-16.png",
     "32": "icon-32.png",
@@ -33,7 +33,20 @@
   },
   "content_scripts": [
     {
-      "js": ["shared.js","content.js"],
+      "js": [
+        "content.js"
+      ],
+      "matches": [
+        "*://*.vpn.cocomine.cc/*",
+        "http://localhost:3000/*"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content.js.map"
+      ],
       "matches": [
         "*://*.vpn.cocomine.cc/*",
         "http://localhost:3000/*"

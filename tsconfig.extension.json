@@ -6,15 +6,14 @@
     "module": "es2020",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "outDir": "public",
     "allowJs": false,
-    "noEmit": false,
+    "noEmit": true,
     "isolatedModules": false,
     "skipLibCheck": true,
     "sourceMap": true,
     "rootDir": "src/extension",
     "types": ["chrome"],
-    "useDefineForClassFields": false,
+    "useDefineForClassFields": false
   },
   "include": [
     "src/extension/**/*"

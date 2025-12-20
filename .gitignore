@@ -162,3 +162,5 @@ dist
 # and uncomment the following lines
 # .pnp.*
 
+/public/*.js
+/public/*.js.map

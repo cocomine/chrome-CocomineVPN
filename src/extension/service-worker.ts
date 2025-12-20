@@ -1,5 +1,5 @@
 import type {RuntimeMessage, StoredVmData} from './types';
-import {createProxyConfig} from "./createProxyConfig.js";
+import {createProxyConfig} from "./createProxyConfig";
 
 const API_URL = 'https://api.cocomine.cc'; // API endpoint, in this time is only for ping test
 let pingInterval: number | undefined; // To hold the interval ID for pinging
