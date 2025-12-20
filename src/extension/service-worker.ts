@@ -127,78 +127,85 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
  * This event is triggered when a message is sent from the content script.
  * Specifically, it handles the 'Connect' message type to set up a proxy configuration.
  */
-chrome.runtime.onMessage.addListener(async (message: RuntimeMessage, _sender, sendResponse) => {
-    console.debug(message); //debug
+chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResponse) => {
+    console.debug('Service worker received message:', message); // Debug log
 
     // Handle the 'Connect' message type
     if (message.type === 'Connect') {
-        const {config, vmData, cleanup} = await createProxyConfig(message.data)
-        console.debug(config, vmData, cleanup); //debug
-        await chrome.proxy.settings.set({value: config, scope: 'regular'})
-        if (cleanup) cleanup();
+        (async () => {
+            const {config, vmData, cleanup} = await createProxyConfig(message.data)
+            console.debug(config, vmData, cleanup); //debug
+            await chrome.proxy.settings.set({value: config, scope: 'regular'})
+            if (cleanup) cleanup();
 
-        // every 1s, send request to /ping to check if the proxy is connected
-        // terminate after 60s if not connected
-        let tryCount = 0;
-        pingInterval && clearInterval(pingInterval); // Clear any existing ping intervals
-        pingInterval = setInterval(async () => {
-            try {
-                const response = await fetch(`${API_URL}/ping`, {headers: {'Content-Type': 'application/json'}})
-                if (!response.ok) throw new Error('Ping failed'); // If response is not OK, throw an error to trigger the catch block
+            // every 1s, send request to /ping to check if the proxy is connected
+            // terminate after 60s if not connected
+            let tryCount = 0;
+            pingInterval && clearInterval(pingInterval); // Clear any existing ping intervals
+            pingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/ping`, {headers: {'Content-Type': 'application/json'}})
+                    if (!response.ok) throw new Error('Ping failed'); // If response is not OK, throw an error to trigger the catch block
 
-                // Ping successful
-                clearInterval(pingInterval);
-                await chrome.storage.local.set({vmData}); // Save the vmData to chrome.storage.local
-
-                // Notify the user that the connection is successful
-                await chrome.notifications.clear('connectedNotify');
-                await chrome.notifications.create('connectedNotify', {
-                    type: 'basic',
-                    iconUrl: 'icon-128.png',
-                    title: '成功連接',
-                    message: '已成功連接到節點!',
-                });
-
-                await createAlarms(vmData); // Create alarms based on the VM data
-                sendResponse({connected: true}); // Send success response
-            } catch (e) {
-                // Ping failed, increment tryCount and check if we should stop trying
-                console.log('Ping attempt failed, retrying...', e);
-                tryCount++;
-                if (tryCount > 60) {
-                    sendResponse({connected: false});
+                    // Ping successful
                     clearInterval(pingInterval);
+                    await chrome.storage.local.set({vmData}); // Save the vmData to chrome.storage.local
+
+                    // Notify the user that the connection is successful
+                    await chrome.notifications.clear('connectedNotify');
+                    await chrome.notifications.create('connectedNotify', {
+                        type: 'basic',
+                        iconUrl: 'icon-128.png',
+                        title: '成功連接',
+                        message: '已成功連接到節點!',
+                    });
+
+                    await createAlarms(vmData); // Create alarms based on the VM data
+                    sendResponse({connected: true}); // Send success response
+                    console.log('Ping successful, proxy is connected');
+                } catch (e) {
+                    // Ping failed, increment tryCount and check if we should stop trying
+                    console.log('Ping attempt failed, retrying...', e);
+                    tryCount++;
+                    if (tryCount > 60) {
+                        sendResponse({connected: false});
+                        clearInterval(pingInterval);
+                    }
                 }
-            }
-        }, 1000);
+            }, 1000);
+        })()
         return true;
     }
 
     // Handle the 'Disconnect' message type
     if (message.type === 'Disconnect') {
-        // Clear proxy settings and stored VM data
-        await chrome.proxy.settings.clear({});
-        await chrome.storage.local.remove('vmData');
-        await chrome.notifications.clear('disconnectedNotify');
-        await chrome.notifications.create('disconnectedNotify', {
-            type: 'basic',
-            iconUrl: 'icon-128.png',
-            title: '已斷開連接',
-            message: '已成功斷開與節點的連接!',
-        });
-        await chrome.alarms.clearAll();
+        (async () =>{
+            // Clear proxy settings and stored VM data
+            await chrome.proxy.settings.clear({});
+            await chrome.storage.local.remove('vmData');
+            await chrome.notifications.clear('disconnectedNotify');
+            await chrome.notifications.create('disconnectedNotify', {
+                type: 'basic',
+                iconUrl: 'icon-128.png',
+                title: '已斷開連接',
+                message: '已成功斷開與節點的連接!',
+            });
+            await chrome.alarms.clearAll();
 
-        sendResponse({connected: false}); // Send success response
+            sendResponse({connected: false}); // Send success response
+        })()
         return true;
     }
 
     // todo: Handle the 'AlarmsUpdate' message type
     if (message.type === 'AlarmsUpdate') {
-        const vmData = message.data;
+        (async () => {
+            const vmData = message.data;
 
-        await createAlarms(vmData); // Update alarms based on new VM data
-        await chrome.storage.local.set({vmData}); // Update stored VM data
-        sendResponse({updated: true}); // Send success response
+            await createAlarms(vmData); // Update alarms based on new VM data
+            await chrome.storage.local.set({vmData}); // Update stored VM data
+            sendResponse({updated: true}); // Send success response
+        })()
         return true;
     }
     return false;

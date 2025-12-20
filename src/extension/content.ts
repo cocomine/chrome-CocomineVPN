@@ -7,6 +7,7 @@ import type {ExtensionMessage, StoredVmData, VMInstanceDataType} from './types';
 window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>) => {
     if (event.source !== window) return; // Only accept messages from the same window
     const message = event.data; // Extract the message data
+    console.debug('Content script received message:', message); // Debug log
     if (!message?.type) return; // Ignore messages without a type
 
     await ensureRuntimeReady(); // Ensure the Chrome runtime is ready
