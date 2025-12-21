@@ -1,5 +1,4 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {countryType} from "../hooks/useProxyData";
 import tw_flag from "../assets/tw.svg";
 import jp_flag from "../assets/jp.svg";
 import us_flag from "../assets/us.svg";
@@ -9,6 +8,7 @@ import in_flag from "../assets/in.svg";
 import dislink from "../assets/dislink.svg";
 import link from "../assets/link.svg";
 import {Col, Row} from "react-bootstrap";
+import {VMCountryType} from "../extension/types";
 
 
 /**
@@ -19,18 +19,18 @@ import {Col, Row} from "react-bootstrap";
  *
  * @param {Object} props - The properties for the LinkStatus component.
  * @param {boolean} props.connectedProp - Indicates if the connection is active.
- * @param {countryType | null} props.countryProp - The country code of the connected node.
+ * @param {VMCountryType | null} props.countryProp - The country code of the connected node.
  * @param {string | null} props.vmName - The name of the virtual machine.
  * @param {function} props.onDisconnect - Callback function to handle disconnection.
  */
 export const LinkStatus: React.FC<{
     connectedProp: boolean,
-    countryProp: countryType | null,
+    countryProp: VMCountryType | null,
     vmName: string | null,
     onDisconnect: () => void
 }> = ({connectedProp, countryProp, vmName, onDisconnect}) => {
     const [connected, setConnected] = useState(connectedProp);
-    const [country, setCountry] = useState<countryType | null>(countryProp);
+    const [country, setCountry] = useState<VMCountryType | null>(countryProp);
     const [msg, setMsg] = useState<string | null>('未連線');
 
     // flag image element for menu item (memoized) (only update when data._country is changed)

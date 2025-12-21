@@ -1,18 +1,10 @@
 import {useEffect, useState} from "react";
-
-/**
- * Type definition for the proxy mode.
- *
- * @typedef {'whitelist' | 'blacklist' | 'disable'} ProxyMode
- */
-type ProxyMode = 'whitelist' | 'blacklist' | 'disable';
+import {ProxyMode} from "../extension/types";
 
 /**
  * Custom hook to manage the proxy mode state.
  *
  * This hook retrieves the proxy mode from `chrome.storage.local` and listens for changes to update the state.
- *
- * @returns {Object} An object containing the current proxy mode.
  */
 export default function useProxyMode() {
     const [mode, setMode] = useState<ProxyMode>('disable');

@@ -1,11 +1,11 @@
 import {Button, ButtonGroup, CloseButton, Col, Form, Modal, Row} from "react-bootstrap";
 import React, {CSSProperties, useCallback, useEffect, useMemo, useState} from "react";
 import Scrollbar, {positionValues} from "react-custom-scrollbars";
-import useBlackWhiteListData, {AddURLModalProps, ListType, URLSelectorProps} from "../hooks/useBlackWhiteListData";
+import useBlackWhiteListData from "../hooks/useBlackWhiteListData";
 import DynamicText from "./DynamicText";
 import useProxyData from "../hooks/useProxyData";
 import useProxyMode, {ProxyMode} from "../hooks/useProxyMode";
-
+import {AddURLModalProps, MaskType, StorageLists, URLSelectorProps} from "../extension/types";
 
 const COLORS_LIST = ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"] //colors for the rainbow effect
 
@@ -19,26 +19,28 @@ const BlackWhiteList = () => {
     const blacklist = useBlackWhiteListData("blacklist") // get the blacklist data
     const {mode} = useProxyMode(); // get the proxy mode
     const [show, setShow] = useState(false); // show add url modal
-    const [maskTop, setMaskTop] = useState('black'); // list top mask color
-    const [maskBottom, setMaskBottom] = useState('transparent') // list bottom mask color
+    const [maskTop, setMaskTop] = useState<MaskType>('black'); // list top mask color
+    const [maskBottom, setMaskBottom] = useState<MaskType>('transparent') // list bottom mask color
     const [activeURL, setActiveURL] = useState("") // active url
 
     /* handle delete event and delete the url */
-    const onDelete = useCallback((url: string) => {
+    const onDelete = useCallback(async (url: string) => {
         // Check if chrome.storage is available
         if (chrome.storage === undefined) return;
 
-        type StorageLists = Partial<Record<ProxyMode, string[]>>;
+        // white list
+        if (mode === "whitelist") {
+            const tmp = whitelist.data.filter((item) => item !== url)
+            await chrome.storage.sync.set({whitelist: tmp});
+        }
+        // black list
+        else {
+            const tmp = blacklist.data.filter((item) => item !== url)
+            await chrome.storage.sync.set({blacklist: tmp});
+        }
 
-        // Get the list from chrome.storage.sync
-        chrome.storage.sync.get<StorageLists>(mode, (data) => {
-            const list = data[mode] ?? []
-            // Remove the selected url from the list
-            chrome.storage.sync.set({[mode]: list.filter((value: string) => value !== url)}, () => {
-                console.log(`${url} removed from ${mode}`)
-            })
-        });
-    }, [mode])
+        console.log(`${url} removed from ${mode}`)
+    }, [blacklist.data, mode, whitelist.data])
 
     /* handle scroll events and update the mask colors based on the scroll position. */
     const onScroll = useCallback((values: positionValues) => {
@@ -47,33 +49,30 @@ const BlackWhiteList = () => {
     }, [])
 
     /* handle proxy mode change event */
-    const onProxyModeChange = useCallback((mode: ProxyMode) => {
+    const onProxyModeChange = useCallback(async (mode: ProxyMode) => {
         // Check if chrome.storage is available
         if (chrome.storage === undefined) return;
 
         // Set the proxyMode to chrome.storage.local
-        chrome.storage.local.set({proxyMode: mode}, () => {
-            console.log(`Proxy mode set to ${mode}`)
-        });
+        await chrome.storage.local.set({proxyMode: mode});
+        console.log(`Proxy mode set to ${mode}`)
 
+        // reconnect with the new mode
         if (vmData === null) return;
-
-        // reconnect
-        chrome.runtime.sendMessage({type: "Connect", data: vmData});
+        await chrome.runtime.sendMessage({type: "Connect", data: vmData});
     }, [vmData])
 
     /* handle add event */
-    const onAdd = useCallback(() => {
+    const onAdd = useCallback(async () => {
         // Check if chrome.tabs is available
         if (chrome.tabs === undefined) return;
 
         // Get the active tab url
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (tabs[0].url === undefined) return;
+        const tabs = await chrome.tabs.query({active: true, currentWindow: true});
+        if (tabs[0].url === undefined) return;
 
-            setActiveURL(tabs[0].url)
-            setShow(true)
-        });
+        setActiveURL(tabs[0].url)
+        setShow(true)
     }, [])
 
     /* memoized list component */
@@ -82,7 +81,9 @@ const BlackWhiteList = () => {
             return (
                 <ul>
                     {whitelist.data.map((url) =>
-                        <li>{url} <CloseButton className={"float-end"} onClick={() => onDelete(url)}/></li>
+                        <li className={'text-truncate'}><CloseButton className={"float-end"}
+                                                                     onClick={() => onDelete(url)}/><span>{url}</span>
+                        </li>
                     )}
                     <li>
                         <div className="text-center text-muted">
@@ -95,7 +96,9 @@ const BlackWhiteList = () => {
             return (
                 <ul>
                     {blacklist.data.map((url) =>
-                        <li>{url} <CloseButton className={"float-end"} onClick={() => onDelete(url)}/></li>
+                        <li className={'text-truncate'}><CloseButton className={"float-end"}
+                                                                     onClick={() => onDelete(url)}/><span>{url}</span>
+                        </li>
                     )}
                     <li>
                         <div className="text-center text-muted">
@@ -125,12 +128,12 @@ const BlackWhiteList = () => {
                         <ButtonGroup aria-label="代理模式" size={"sm"} className="w-100">
                             <Button variant={mode === "whitelist" ? "primary" : "outline-primary"}
                                     className={"rounded-start-5"}
-                                    onClick={() => onProxyModeChange('whitelist')}>白名單模式</Button>
+                                    onClick={async () => await onProxyModeChange('whitelist')}>白名單模式</Button>
                             <Button variant={mode === "disable" ? "secondary" : "outline-secondary"}
-                                    onClick={() => onProxyModeChange('disable')}>禁用</Button>
+                                    onClick={async () => await onProxyModeChange('disable')}>禁用</Button>
                             <Button variant={mode === "blacklist" ? "primary" : "outline-primary"}
                                     className={"rounded-end-5"}
-                                    onClick={() => onProxyModeChange('blacklist')}>黑名單模式</Button>
+                                    onClick={async () => await onProxyModeChange('blacklist')}>黑名單模式</Button>
                         </ButtonGroup>
                     </Col>
                     <Col className="position-relative">
@@ -244,7 +247,7 @@ const URLSelector: React.FC<URLSelectorProps> = ({value, onSelect, onHover}) => 
  */
 const AddURLModal: React.FC<AddURLModalProps> = ({show, onHide, url}) => {
 
-    const [addListType, setAddListType] = useState<ListType>("whitelist")
+    const [addListType, setAddListType] = useState<Exclude<ProxyMode, 'disable'>>("whitelist")
     const [selectedURL, setSelectedURL] = useState<string | null>(null)
     const [demoURL, setDemoURL] = useState<string | null>(null)
     const [thisHostOnly, setThisHostOnly] = useState<boolean>(false)
@@ -252,21 +255,21 @@ const AddURLModal: React.FC<AddURLModalProps> = ({show, onHide, url}) => {
     /**
      * Callback function to handle adding a URL to the blacklist.
      */
-    const onAdd = useCallback(() => {
+    const onAdd = useCallback(async () => {
         //check if chrome.storage is available
         if (chrome.storage === undefined) return;
 
         //get the list from chrome.storage.sync
-        chrome.storage.sync.get<Partial<Record<ListType, string[]>>>(addListType, (data) => {
-            const list: string[] = data[addListType] ?? []
-            if (selectedURL && !list.includes(selectedURL)) list.push(selectedURL)
-            if (!thisHostOnly && !list.includes('*.' + selectedURL)) list.push('*.' + selectedURL)
+        const data = await chrome.storage.sync.get<StorageLists>(addListType);
+        const list: string[] = data[addListType] ?? []
 
-            //add the selected url to the list
-            chrome.storage.sync.set({[addListType]: list}, () => {
-                console.log(`${selectedURL} added to ${addListType}`)
-            })
-        });
+        //add the selected url and its wildcard version to the list
+        if (selectedURL && !list.includes(selectedURL)) list.push(selectedURL)
+        if (!thisHostOnly && !list.includes('*.' + selectedURL)) list.push('*.' + selectedURL)
+
+        //add the selected url to the list
+        await chrome.storage.sync.set({[addListType]: list})
+        console.log(`${selectedURL} added to ${addListType}`)
 
         onHide();
     }, [selectedURL, addListType, onHide, thisHostOnly]);

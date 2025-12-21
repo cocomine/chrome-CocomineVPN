@@ -137,8 +137,9 @@ code {
 
             &:hover {
                 background-color: $body-secondary-bg-dark;
+
                 .btn-close {
-                    display: block;
+                    display: inline-block;
                 }
             }
             .btn-close {

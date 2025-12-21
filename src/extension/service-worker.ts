@@ -2,7 +2,7 @@ import type {RuntimeMessage, StoredVmData, VMInstanceDataType} from './types';
 import {createProxyConfig} from "./createProxyConfig";
 
 const API_URL = 'https://api.cocomine.cc'; // API endpoint, in this time is only for ping test
-const WEB_URL = process.env.NODE_ENV === "development" ? 'https://localhost:3000' : 'https://vpn.cocomine.cc'; // Web URL for user interactions
+const WEB_URL = process.env.NODE_ENV === "development" ? 'http://localhost:3000' : 'https://vpn.cocomine.cc'; // Web URL for user interactions
 let pingInterval: NodeJS.Timeout | undefined; // To hold the interval ID for pinging
 
 /**
@@ -144,7 +144,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
             pingInterval && clearInterval(pingInterval); // Clear any existing ping intervals
             pingInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`${API_URL}/ping`, {headers: {'Content-Type': 'application/json'}})
+                    const response = await fetch(`${API_URL}/ping`, {headers: {'Content-Type': 'application/json'}, signal: AbortSignal.timeout(1000)})
                     if (!response.ok) throw new Error('Ping failed'); // If response is not OK, throw an error to trigger the catch block
 
                     // Ping successful
@@ -168,8 +168,9 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
                     console.log('Ping attempt failed, retrying...', e);
                     tryCount++;
                     if (tryCount > 60) {
-                        sendResponse({connected: false});
                         clearInterval(pingInterval);
+                        await chrome.proxy.settings.clear({});
+                        sendResponse({connected: false});
                     }
                 }
             }, 1000);
@@ -197,7 +198,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
         return true;
     }
 
-    // todo: Handle the 'AlarmsUpdate' message type
+    // Handle the 'AlarmsUpdate' message type
     if (message.type === 'AlarmsUpdate') {
         (async () => {
             const vmData = message.data;

@@ -1,12 +1,8 @@
 import {useEffect, useState} from "react";
+import {VMCountryType, VMInstanceDataType} from "../extension/types";
 import ChromeSettingOnChangeDetails = chrome.types.ChromeSettingOnChangeDetails;
 import ProxyConfig = chrome.proxy.ProxyConfig;
 
-/**
- * Type definition for the country.
- * @typedef {("TW" | "JP" | "US" | "HK" | string)} country
- */
-type countryType = "TW" | "JP" | "US" | "HK" | "UK" | "IN" | string
 /**
  * Type definition for the provider.
  * @typedef {("google" | "azure")} provider
@@ -31,33 +27,6 @@ type profileType = {
  * @typedef {("startOnly" | "stopOnly" | "readOnly" | "disable")} readOnlyMode
  */
 type readOnlyMode = "startOnly" | "stopOnly" | "readOnly" | "disable"
-/**
- * Type definition for the VM data.
- * @typedef {Object} VMData
- * @property {string} _name - The name of the VM.
- * @property {string} _status - The status of the VM.
- * @property {string} _id - The id of the VM.
- * @property {string} _zone - The zone of the VM.
- * @property {string} _url - The url of the VM.
- * @property {country} _country - The country of the VM.
- * @property {profile[]} _profiles - The profiles of the VM.
- * @property {provider} _provider - The provider of the VM.
- * @property {boolean} _isPowerOn - The power status of the VM.
- * @property {readOnlyMode} _readonly - The read only mode of the VM.
- */
-type VMDataType = {
-    readonly _name: string;
-    _status: string;
-    readonly _id: string;
-    readonly _zone: string;
-    readonly _url: string
-    readonly _country: countryType
-    readonly _profiles: profileType[]
-    readonly _provider: providerType
-    _isPowerOn: boolean
-    readonly _readonly: readOnlyMode,
-    _expired: string | null
-}
 
 /**
  * `useProxyData` is a custom React hook that manages the state and effects related to proxy data.
@@ -65,13 +34,13 @@ type VMDataType = {
  *
  * @returns The state values for connected, country, and vmData.
  * @returns {boolean} connected - A boolean indicating whether the user is connected to vpn.cocomine.cc.
- * @returns {countryType | null} country - The country code of the VPN server, or null if not connected.
- * @returns {VMDataType | null} vmData - The VM data retrieved from chrome.storage.local, or null if not available.
+ * @returns {VMCountryType | null} country - The country code of the VPN server, or null if not connected.
+ * @returns {VMInstanceDataType | null} vmData - The VM data retrieved from chrome.storage.local, or null if not available.
  */
 export default function useProxyData() {
     const [connected, setConnected] = useState(false);
-    const [country, setCountry] = useState<countryType | null>(null);
-    const [vmData, setVmData] = useState<VMDataType | null>(null);
+    const [country, setCountry] = useState<VMCountryType | null>(null);
+    const [vmData, setVmData] = useState<VMInstanceDataType | null>(null);
 
     // Get the proxy data
     useEffect(() => {
@@ -130,7 +99,7 @@ export default function useProxyData() {
         if(chrome.storage === undefined) return;
 
         // Get the vmData from chrome.storage.local
-        chrome.storage.local.get<{ vmData?: VMDataType }>('vmData', (data) => {
+        chrome.storage.local.get<{ vmData: VMInstanceDataType }>('vmData', (data) => {
             console.debug(data) //debug
             setVmData(data.vmData ?? null)
             setCountry(data.vmData?._country || null)
@@ -140,7 +109,7 @@ export default function useProxyData() {
         const listener = (changes: {[p: string]: chrome.storage.StorageChange}):void => {
             console.debug(changes) //debug
             if (changes.vmData) {
-                const nextVmData = changes.vmData.newValue as VMDataType | undefined;
+                const nextVmData = changes.vmData.newValue as VMInstanceDataType | undefined;
                 setVmData(nextVmData ?? null)
                 setCountry(nextVmData?._country || null);
             }
@@ -154,5 +123,3 @@ export default function useProxyData() {
 
     return {connected, country, vmData}
 }
-
-export type {countryType, providerType, profileType, readOnlyMode, VMDataType}

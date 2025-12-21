@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {VMDataType} from "../hooks/useProxyData";
 import moment from "moment/moment";
 import {Button, Col, Row} from "react-bootstrap";
+import {VMInstanceDataType} from "../extension/types";
 
 /**
  * TimeLast component
@@ -10,9 +10,9 @@ import {Button, Col, Row} from "react-bootstrap";
  * It also provides a button to extend the node's uptime if the remaining time is less than one hour.
  *
  * @param {Object} props - The properties for the TimeLast component.
- * @param {VMDataType} props.vmData - The data object containing information about the VM.
+ * @param {VMInstanceDataType} props.vmData - The data object containing information about the VM.
  */
-export const TimeLast: React.FC<{ vmData: VMDataType }> = ({vmData}) => {
+export const TimeLast: React.FC<{ vmData: VMInstanceDataType }> = ({vmData}) => {
     const [expect_offline_time_Interval, setExpect_offline_time_Interval] = useState<string>("Loading...")
     const [enableExtend, setEnableExtend] = useState<boolean>(false)
     const [expired, setExpired] = useState<string | null>(vmData._expired)

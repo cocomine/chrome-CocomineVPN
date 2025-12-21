@@ -1,4 +1,4 @@
-export type ProxyMode = 'whitelist' | 'blacklist';
+export type ProxyMode = 'whitelist' | 'blacklist' | 'disable';
 
 /**
  * Type definition for the country.
@@ -108,3 +108,35 @@ export interface ProxyFlags {
   chatGPTOnly?: boolean;
   proxyMode?: ProxyMode;
 }
+
+/**
+ * Interface for the properties of the AddURLModal component.
+ *
+ * @interface AddURLModalProps
+ * @property {boolean} show - Indicates whether the modal is visible.
+ * @property {function} onHide - Callback function to handle hiding the modal.
+ * @property {string} url - The URL to be added.
+ */
+export interface AddURLModalProps {
+  show: boolean;
+  onHide: () => void;
+  url: string;
+}
+
+/**
+ * Interface for the properties of the URLSelector component.
+ *
+ * @interface URLSelectorProps
+ * @property {string} value - The current value of the URL selector.
+ * @property {function} onSelect - Callback function to handle the selection of a URL.
+ * @property {function} [onHover] - Optional callback function to handle hovering over a URL.
+ */
+export interface URLSelectorProps {
+  value: string;
+  onSelect: (value: string) => void;
+  onHover?: (value: string | null) => void;
+}
+
+export type MaskType = 'black' | 'transparent' | `rgba(0,0,0,${number})`
+
+export type StorageLists = Partial<Record<Exclude<ProxyMode, 'disable'>, string[]>>;

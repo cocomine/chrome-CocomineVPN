@@ -15,16 +15,16 @@ export default function useChatGPTOnlyData() {
         if (chrome.storage === undefined) return;
 
         // Get the chatGPTOnly from chrome.storage.local
-        chrome.storage.local.get('chatGPTOnly', (data) => {
+        chrome.storage.local.get<{ chatGPTOnly: boolean }>('chatGPTOnly', (data) => {
             console.debug(data) //debug
-            setChatGPTOnly(data.chatGPTOnly as any)
+            setChatGPTOnly(Boolean(data.chatGPTOnly))
         });
 
         // Add listener for changes in chatGPTOnly
         const listener = (changes: { [p: string]: chrome.storage.StorageChange }): void => {
             console.debug(changes) //debug
             if (changes.chatGPTOnly) {
-                setChatGPTOnly(changes.chatGPTOnly.newValue as any)
+                setChatGPTOnly(Boolean(changes.chatGPTOnly.newValue))
             }
         }
         chrome.storage.onChanged.addListener(listener);
