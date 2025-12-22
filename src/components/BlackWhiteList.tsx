@@ -81,7 +81,7 @@ const BlackWhiteList = () => {
             return (
                 <ul>
                     {whitelist.data.map((url) =>
-                        <li className={'text-truncate'}><CloseButton className={"float-end"}
+                        <li className={'text-truncate'} title={url}><CloseButton className={"float-end"}
                                                                      onClick={() => onDelete(url)}/><span>{url}</span>
                         </li>
                     )}
