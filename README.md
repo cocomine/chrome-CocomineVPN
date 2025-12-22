@@ -1,6 +1,6 @@
 Cocomine VPN Extension 
 ===
-![Icon](/src/assets/extension.webp)
+![Icon](public/icon-192.png)
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/cocomine/chrome-vpn)
 
@@ -48,3 +48,35 @@ Update Log
 0.2.0
 ---
 + 增加自訂代理規則功能
+
+0.2.3
+---
++ 更換擴充插件圖標, 請認準新圖標
+
+![Icon](public/icon-192.png)
+![action-icon](public/action-icon.png)
+
+1.1.0
+---
++ 增加連接檢查
++ 增加即將離線通知
+
+1.1.5
+---
++ 修復連接檢查問題
+
+1.1.6
+---
++ 修復無法正確顯示狀態問題
+
+1.1.7
+---
++ 安全性修補
+
+1.1.8
+---
++ 時間延長點擊後將直接延長時間, 不再需要在網頁再次點擊
++ ChatGPT Only Mode 更變名稱為 OpenAI Mode, 並添加 sora.com 代理
+
+2.0.0
+---
