@@ -1,6 +1,4 @@
 name: Build test action
-author: cocomine
-description: A GitHub Action to build test the project
 
 on:
   push:
