@@ -29,7 +29,7 @@ function App() {
 
             const res = await chrome.runtime.sendMessage({type: "Disconnect", data: vmData});
             if (res.connected === false) {
-                audio.play();
+                await audio.play();
             }
         } else {
             // open vpn.cocomine.cc

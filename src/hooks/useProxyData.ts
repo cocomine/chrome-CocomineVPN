@@ -4,31 +4,6 @@ import ChromeSettingOnChangeDetails = chrome.types.ChromeSettingOnChangeDetails;
 import ProxyConfig = chrome.proxy.ProxyConfig;
 
 /**
- * Type definition for the provider.
- * @typedef {("google" | "azure")} provider
- */
-type providerType = "google" | "azure"
-/**
- * Type definition for the profile.
- * @typedef {Object} profile
- * @property {("OpenVPN" | "SoftEther" | "SS")} type - The type of the profile.
- * @property {string} name - The name of the profile.
- * @property {string} filename - The filename of the profile.
- * @property {string} [url] - The url of the profile.
- */
-type profileType = {
-    "type": "OpenVPN" | "SoftEther" | "SS" | "socks5",
-    "name": string,
-    "filename": string
-    "url"?: string
-}
-/**
- * Type definition for the read only mode.
- * @typedef {("startOnly" | "stopOnly" | "readOnly" | "disable")} readOnlyMode
- */
-type readOnlyMode = "startOnly" | "stopOnly" | "readOnly" | "disable"
-
-/**
  * `useProxyData` is a custom React hook that manages the state and effects related to proxy data.
  * It returns an object containing the connection status, country code, and VM data.
  *
