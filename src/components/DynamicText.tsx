@@ -1,25 +1,15 @@
 import React, {PropsWithChildren, useEffect, useRef} from 'react';
 import './DynamicText.css';
+import {DynamicTextProps} from "../extension/types";
 
-/**
- * Interface for the properties of the DynamicText component.
- *
- * @interface DynamicTextProps
- * @extends {PropsWithChildren}
- * @property {string} [defaultFontSize] - The default font size for the text.
- */
-interface DynamicTextProps extends PropsWithChildren {
-    defaultFontSize?: string;
-}
 
 /**
  * DynamicText component
  *
  * This component dynamically adjusts the font size of its text content to fit within its container.
  *
- * @param {DynamicTextProps} props - The properties for the DynamicText component.
- * @param {string} [props.defaultFontSize] - The default font size for the text.
- * @param {React.ReactNode} props.children - The text content to be displayed.
+ * @param {string} defaultFontSize - The default font size for the text.
+ * @param children
  */
 const DynamicText: React.FC<DynamicTextProps> = ({defaultFontSize, children}) => {
     const containerRef = useRef<HTMLDivElement>(null);

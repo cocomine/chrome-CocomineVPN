@@ -1,4 +1,20 @@
+import {PropsWithChildren} from "react";
+
+/**
+ * Proxy mode type definition. For custom proxy rule.
+ */
 export type ProxyMode = 'whitelist' | 'blacklist' | 'disable';
+
+/**
+ * Interface for the properties of the DynamicText component.
+ *
+ * @interface DynamicTextProps
+ * @extends {PropsWithChildren}
+ * @property {string} [defaultFontSize] - The default font size for the text.
+ */
+export interface DynamicTextProps extends PropsWithChildren {
+  defaultFontSize?: string;
+}
 
 /**
  * Type definition for the country.
