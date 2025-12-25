@@ -58,19 +58,19 @@ export const LinkStatus: React.FC<{
 
     // toggle mouse enter event
     const onMouseEnter = useCallback(() => {
-        setMsg(connected ? "點擊以斷開" : "點擊以開啟網頁")
+        setMsg(connected ? "點擊以斷開連接" : "點擊以開啟網頁")
     }, [connected]);
 
     // toggle mouse leave event
     const onMouseLeave = useCallback(() => {
-        setMsg(connected ? `已連接${country}(${vmName})節點` : "未連線")
+        setMsg(connected ? `已連接 ${country}(${vmName}) 節點` : "未連線")
     }, [connected, country, vmName]);
 
     // update state when props changed
     useEffect(() => {
         setCountry(countryProp)
         setConnected(connectedProp)
-        setMsg(connectedProp ? (countryProp === null ? "連線中" : `已連接${countryProp}(${vmName})節點`) : "未連線")
+        setMsg(connectedProp ? (countryProp === null ? "連線中" : `已連接 ${countryProp}(${vmName}) 節點`) : "未連線")
     }, [connectedProp, countryProp, vmName]);
 
     return (
@@ -83,14 +83,14 @@ export const LinkStatus: React.FC<{
             <Row className="justify-content-center align-content-center g-1">
                 <Col xs={'auto'}>
                     <div className="link-status" data-connected={connected} onClick={onDisconnect}
-                         onMouseEnter={onMouseEnter}
+                         onMouseEnter={onMouseEnter} onTouchStart={onMouseLeave} onTouchEnd={onMouseLeave}
                          onMouseLeave={onMouseLeave}>
                         {flag}
                     </div>
                 </Col>
                 <div className="w-100"></div>
                 <Col xs={'auto'}>
-                    <h3>{msg}</h3>
+                    <h3 className={'text-center'}>{msg}</h3>
                 </Col>
             </Row>
         </div>

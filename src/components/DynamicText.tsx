@@ -1,4 +1,4 @@
-import React, {PropsWithChildren, useEffect, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import './DynamicText.css';
 import {DynamicTextProps} from "../extension/types";
 
