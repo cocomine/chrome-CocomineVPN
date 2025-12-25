@@ -10,7 +10,7 @@ import useChatGPTOnlyData from "../hooks/useChatGPTOnlyData";
  * ChatGPTOnly component
  *
  * This component provides a UI to toggle the "ChatGPT Only Mode".
- * When enabled, it proxies only the chatgpt.com and openai.com websites.
+ * When enabled, it proxies only the chatgpt.com, openai.com, and sora.com websites.
  */
 export const ChatGPTOnly: React.FC = () => {
     const {vmData} = useProxyData();
@@ -18,7 +18,7 @@ export const ChatGPTOnly: React.FC = () => {
     const {mode} = useProxyMode();
 
     const onChatGPTOnlyChange = useCallback(async () => {
-        if (chrome.proxy === undefined || chrome.storage === undefined) return
+        if (chrome.proxy === undefined || chrome.storage === undefined || chrome.runtime === undefined) return
         await chrome.storage.local.set({chatGPTOnly: !chatGPTOnly}) // toggle chatGPTOnly
 
         if (vmData === null) return;

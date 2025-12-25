@@ -66,7 +66,7 @@ export type ReadOnlyModeType = "startOnly" | "stopOnly" | "readOnly" | "disable"
 /**
  * VM instance data shape used across UI and runtime messaging.
  *
- * Fields prefixed with `readonly` should not be mutated after creation.
+ * Fields marked with the `readonly` modifier should not be mutated after creation.
  *
  * @property {string} _name - Display name of the VM.
  * @property {string} _status - Current VM status (e.g. "running", "stopped").

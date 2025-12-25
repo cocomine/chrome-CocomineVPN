@@ -82,7 +82,7 @@ export const LinkStatus: React.FC<{
             <Row className="justify-content-center align-content-center g-1">
                 <Col xs={'auto'}>
                     <div className="link-status" data-connected={connected} onClick={onDisconnect}
-                         onMouseEnter={onMouseEnter} onTouchStart={onMouseLeave} onTouchEnd={onMouseLeave}
+                         onMouseEnter={onMouseEnter} onTouchStart={onMouseEnter} onTouchEnd={onMouseLeave}
                          onMouseLeave={onMouseLeave}>
                         {flag}
                     </div>
