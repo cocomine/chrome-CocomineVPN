@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import moment from "moment/moment";
-import {Button, Col, Row} from "react-bootstrap";
+import {Button, Col, Placeholder, Row} from "react-bootstrap";
 import {VMInstanceDataType} from "../extension/types";
 
 /**
@@ -9,11 +9,10 @@ import {VMInstanceDataType} from "../extension/types";
  * This component displays the remaining time until a node is expected to go offline.
  * It also provides a button to extend the node's uptime if the remaining time is less than one hour.
  *
- * @param {Object} props - The properties for the TimeLast component.
- * @param {VMInstanceDataType} props.vmData - The data object containing information about the VM.
+ * @param vmData - The data object containing information about the VM.
  */
 export const TimeLast: React.FC<{ vmData: VMInstanceDataType }> = ({vmData}) => {
-    const [expect_offline_time_Interval, setExpect_offline_time_Interval] = useState<string>("Loading...")
+    const [expect_offline_time_Interval, setExpect_offline_time_Interval] = useState<string | null>(null)
     const [enableExtend, setEnableExtend] = useState<boolean>(false)
     const [expired, setExpired] = useState<string | null>(vmData._expired)
 
@@ -43,11 +42,17 @@ export const TimeLast: React.FC<{ vmData: VMInstanceDataType }> = ({vmData}) => 
         <div className="section glow">
             <Row className="justify-content-center align-content-center">
                 <Col xs={'auto'}>
-                    <span>距離節點預計離線</span>
+                    <span className={'text-muted'}>距離節點預計離線</span>
                 </Col>
                 <div className="w-100"></div>
-                <Col xs={'auto'}>
-                    <h5>{expect_offline_time_Interval}</h5>
+                <Col xs={12} className={'text-center'}>
+                    {expect_offline_time_Interval ? (
+                        <h3>{expect_offline_time_Interval}</h3>
+                    ) : (
+                        <Placeholder animation="wave" as={'h3'}>
+                            <Placeholder xs={6} className={'rounded'}/>
+                        </Placeholder>
+                    )}
                 </Col>
                 <Col xs={12}>
                     <Button variant={enableExtend ? "primary" : "outline-primary"}

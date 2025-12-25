@@ -17,11 +17,10 @@ import {VMCountryType} from "../extension/types";
  * This component displays the connection status to a specific country node.
  * It shows a flag representing the country and a message indicating the connection status.
  *
- * @param {Object} props - The properties for the LinkStatus component.
- * @param {boolean} props.connectedProp - Indicates if the connection is active.
- * @param {VMCountryType | null} props.countryProp - The country code of the connected node.
- * @param {string | null} props.vmName - The name of the virtual machine.
- * @param {function} props.onDisconnect - Callback function to handle disconnection.
+ * @param connectedProp - Indicates if the connection is active.
+ * @param countryProp - The country code of the connected node.
+ * @param vmName - The name of the virtual machine.
+ * @param onDisconnect - Callback function to handle disconnection.
  */
 export const LinkStatus: React.FC<{
     connectedProp: boolean,
@@ -63,14 +62,14 @@ export const LinkStatus: React.FC<{
 
     // toggle mouse leave event
     const onMouseLeave = useCallback(() => {
-        setMsg(connected ? `已連接 ${country}(${vmName}) 節點` : "未連線")
-    }, [connected, country, vmName]);
+        setMsg(connected ? `已連接 ${vmName} 節點` : "未連線")
+    }, [connected, vmName]);
 
     // update state when props changed
     useEffect(() => {
         setCountry(countryProp)
         setConnected(connectedProp)
-        setMsg(connectedProp ? (countryProp === null ? "連線中" : `已連接 ${countryProp}(${vmName}) 節點`) : "未連線")
+        setMsg(connectedProp ? (countryProp === null ? "連線中" : `已連接 ${vmName} 節點`) : "未連線")
     }, [connectedProp, countryProp, vmName]);
 
     return (

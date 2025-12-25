@@ -8,7 +8,7 @@ import {DynamicTextProps} from "../extension/types";
  *
  * This component dynamically adjusts the font size of its text content to fit within its container.
  *
- * @param {string} defaultFontSize - The default font size for the text.
+ * @param defaultFontSize - The default font size for the text.
  * @param children
  */
 const DynamicText: React.FC<DynamicTextProps> = ({defaultFontSize, children}) => {

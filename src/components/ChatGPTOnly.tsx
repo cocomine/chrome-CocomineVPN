@@ -11,7 +11,6 @@ import useChatGPTOnlyData from "../hooks/useChatGPTOnlyData";
  *
  * This component provides a UI to toggle the "ChatGPT Only Mode".
  * When enabled, it proxies only the chatgpt.com and openai.com websites.
- *
  */
 export const ChatGPTOnly: React.FC = () => {
     const {vmData} = useProxyData();
