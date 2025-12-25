@@ -18,14 +18,14 @@ export const ChatGPTOnly: React.FC = () => {
     const {chatGPTOnly} = useChatGPTOnlyData();
     const {mode} = useProxyMode();
 
-    const onChatGPTOnlyChange = useCallback(() => {
+    const onChatGPTOnlyChange = useCallback(async () => {
         if (chrome.proxy === undefined || chrome.storage === undefined) return
-        chrome.storage.local.set({chatGPTOnly: !chatGPTOnly}) // toggle chatGPTOnly
+        await chrome.storage.local.set({chatGPTOnly: !chatGPTOnly}) // toggle chatGPTOnly
 
         if (vmData === null) return;
 
         // reconnect
-        chrome.runtime.sendMessage({type: "Connect", data: vmData});
+        await chrome.runtime.sendMessage({type: "Connect", data: vmData});
     }, [chatGPTOnly, vmData])
 
     return (
