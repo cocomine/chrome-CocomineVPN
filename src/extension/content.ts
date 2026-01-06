@@ -1,5 +1,5 @@
 import {ensureRuntimeReady, postToPage} from './shared';
-import type {ExtensionMessage, StoredVmData, VMInstanceDataType} from './types';
+import type {ExtensionMessage, StoredTrackData, StoredVmData, VMInstanceDataType} from './types';
 
 /**
  * Listen for messages from the web page and handle them accordingly.
@@ -46,6 +46,20 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
         } else {
             await chrome.runtime.sendMessage({type: 'Disconnect', data: incomingVm}); // Send disconnect message
         }
+    }
+
+    //todo: retrieve tracked VPN usage from storage and send to page
+    if (message.type === 'RetrieveTrackedUsage' && message.ask) {
+        const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
+        const trackData = stored.trackData; // Get the stored VM data
+        if (!trackData) return; // No stored VM data found
+
+        postToPage({
+            type: 'RetrieveTrackedUsage',
+            ask: false,
+            data: trackData
+        });
+        await chrome.storage.local.remove('trackData') // Clear tracked data after sending
     }
 });
 
