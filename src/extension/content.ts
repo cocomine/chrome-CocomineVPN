@@ -48,7 +48,7 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
         }
     }
 
-    //todo: retrieve tracked VPN usage from storage and send to page
+    // retrieve tracked VPN usage from storage and send to page
     if (message.type === 'RetrieveTrackedUsage' && message.ask) {
         const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
         const trackData = stored.trackData ?? []; // Get the stored track data

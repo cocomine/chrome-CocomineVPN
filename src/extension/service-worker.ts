@@ -174,7 +174,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
 
                     console.log('Ping successful, proxy is connected');
 
-                    //todo: save connected time to track VPN usage
+                    // save connected time to track VPN usage
                     await logConnectTrack(vmData);
                 } catch (e) {
                     // Ping failed, increment tryCount and check if we should stop trying
@@ -253,7 +253,7 @@ async function disconnect(): Promise<VMInstanceDataType | undefined> {
 
     console.log('Disconnected from proxy');
 
-    //todo: save disconnected time to track VPN usage
+    // save disconnected time to track VPN usage
     if (vmData) {
         await logDisconnectTrack(vmData);
     }
