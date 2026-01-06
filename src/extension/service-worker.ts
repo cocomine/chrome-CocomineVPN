@@ -70,12 +70,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
     // Check if the alarm is for offline time reached
     if (alarm.name === 'offline-time-reached') {
-        const data = await chrome.storage.local.get<StoredVmData>('vmData');
-        const vm = data.vmData;
-        if (!vm) return;
         console.log("VPN time reached, disconnecting...");
 
-        await disconnect();
+        const vm = await disconnect();
+        if (!vm) return;
         await chrome.notifications.create('timeReachedNotify', {
             type: 'basic',
             iconUrl: 'icon-128.png',
@@ -115,7 +113,7 @@ chrome.notifications.onClicked.addListener(async (notificationId) => {
  */
 chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIndex) => {
     // Handle button click event for 'offlineTimeNotify' notification
-    if (notificationId === 'offlineTimeNotify' || buttonIndex === 0) {
+    if (notificationId === 'offlineTimeNotify' && buttonIndex === 0) {
         const data = await chrome.storage.local.get<StoredVmData>('vmData');
         const vm = data.vmData;
         if (!vm) return; // No VM data found
@@ -125,7 +123,7 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
     }
 
     // Handle button click event for 'timeReachedNotify' notification
-    if (notificationId === 'timeReachedNotify' || buttonIndex === 0) {
+    if (notificationId === 'timeReachedNotify' && buttonIndex === 0) {
         await chrome.tabs.create({url: `${WEB_URL}`});
     }
 });
@@ -155,7 +153,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
                     const response = await fetch(`${API_URL}/ping`, {
                         headers: {'Content-Type': 'application/json'},
                         signal: AbortSignal.timeout(1000)
-                    })
+                    });
                     if (!response.ok) throw new Error('Ping failed'); // If response is not OK, throw an error to trigger the catch block
 
                     // Ping successful
@@ -192,7 +190,6 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
         })()
         return true;
     }
-
 
     // Handle the 'Disconnect' message type
     if (message.type === 'Disconnect') {
@@ -237,7 +234,7 @@ async function createAlarms(vmData: VMInstanceDataType) {
 /**
  * Disconnect from the proxy and clear settings.
  */
-async function disconnect() {
+async function disconnect(): Promise<VMInstanceDataType | undefined> {
     // Retrieve stored VM data
     const stored = await chrome.storage.local.get<StoredVmData>('vmData');
     const vmData = stored.vmData;
@@ -257,5 +254,8 @@ async function disconnect() {
     console.log('Disconnected from proxy');
 
     //todo: save disconnected time to track VPN usage
-    if (vmData) await logDisconnectTrack(vmData)
+    if (vmData) {
+        await logDisconnectTrack(vmData);
+    }
+    return vmData;
 }

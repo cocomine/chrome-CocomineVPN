@@ -101,10 +101,10 @@ export type VMInstanceDataType = {
  * @property country - Country/region code associated with the event.
  * @property target - True if connecting, false if disconnecting.
  */
-export type trackDataType = {
+export type TrackDataType = {
     datetime: string;
     country: VMCountryType;
-    target: boolean;
+    isConnect: boolean;
 }
 
 /**
@@ -166,7 +166,7 @@ export interface PostVMDataMessage {
 export interface RetrieveTrackedUsageMessage {
     type: 'RetrieveTrackedUsage';
     ask: boolean;
-    data: trackDataType[];
+    data: TrackDataType[];
 }
 
 /**
@@ -197,7 +197,7 @@ export interface StoredVmData {
  * Shape stored in persistent storage for tracked VPN usage data.
  */
 export interface StoredTrackData {
-    trackData?: trackDataType[];
+    trackData?: TrackDataType[];
 }
 
 /**

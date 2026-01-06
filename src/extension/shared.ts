@@ -1,4 +1,4 @@
-import type {ExtensionMessage, StoredTrackData, VMInstanceDataType} from './types';
+import type {ExtensionMessage, StoredTrackData, TrackDataType, VMInstanceDataType} from './types';
 
 /**
  * Post a message to the web page.
@@ -20,18 +20,43 @@ export const ensureRuntimeReady = async () => {
 };
 
 /**
+ * Note: New skill!!
+ * Queue used to serialize updates to the `trackData` array in chrome.storage.local.
+ * This avoids race conditions from concurrent read-modify-write sequences.
+ */
+let trackDataUpdateQueue: Promise<void> = Promise.resolve();
+
+/**
+ * Enqueue an update to the `trackData` array so that all updates
+ * are applied sequentially and no events are lost.
+ */
+const enqueueTrackDataUpdate = async (entry: TrackDataType) => {
+    /* Chain the new update onto the existing queue
+    Each update reads the current data, appends the new entry, and writes it back
+    When promise resolves, the next update in the queue can proceed
+    When promise still pending, new updates will wait their turn */
+    trackDataUpdateQueue = trackDataUpdateQueue.then(async () => {
+        const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
+        const trackData = stored.trackData || [];
+        trackData.push(entry);
+        await chrome.storage.local.set({ trackData });
+    }).catch(() => {
+        // Swallow errors to keep the queue usable; consider logging if needed.
+    });
+    return trackDataUpdateQueue;
+};
+
+/**
  * Log a connect track event.
  * @param data - The VM instance data.
  */
 export const logConnectTrack = async (data: VMInstanceDataType) => {
-    const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
-    const trackData = stored.trackData || [];
-    trackData.push({
+    const entry = {
         datetime: new Date().toISOString(),
         country: data._country,
-        target: true
-    });
-    await chrome.storage.local.set({trackData});
+        isConnect: true
+    };
+    await enqueueTrackDataUpdate(entry);
 
 }
 
@@ -40,12 +65,10 @@ export const logConnectTrack = async (data: VMInstanceDataType) => {
  * @param data - The VM instance data.
  */
 export const logDisconnectTrack = async (data: VMInstanceDataType) => {
-    const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
-    const trackData = stored.trackData || [];
-    trackData.push({
+    const entry = {
         datetime: new Date().toISOString(),
         country: data._country,
-        target: false
-    });
-    await chrome.storage.local.set({trackData});
+        isConnect: false
+    };
+    await enqueueTrackDataUpdate(entry);
 }
