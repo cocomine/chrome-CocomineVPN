@@ -40,8 +40,8 @@ const enqueueTrackDataUpdate = async (entry: TrackDataType) => {
         const trackData = stored.trackData || [];
         trackData.push(entry);
         await chrome.storage.local.set({ trackData });
-    }).catch(() => {
-        // Swallow errors to keep the queue usable; consider logging if needed.
+    }).catch((error) => {
+        console.error('Failed to update trackData in chrome.storage.local:', error);
     });
     return trackDataUpdateQueue;
 };
@@ -57,7 +57,6 @@ export const logConnectTrack = async (data: VMInstanceDataType) => {
         isConnect: true
     };
     await enqueueTrackDataUpdate(entry);
-
 }
 
 /**

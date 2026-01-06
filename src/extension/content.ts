@@ -41,7 +41,7 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
 
         // Update storage or send disconnect message based on power state
         if (incomingVm._isPowerOn) {
-            //update alarms
+            // When the VM is powered on, refresh alarms so the background script can enforce usage limits and timers for this VM instance
             await chrome.runtime.sendMessage({type: 'AlarmsUpdate', data: incomingVm}); // Send alarms update message
         } else {
             await chrome.runtime.sendMessage({type: 'Disconnect', data: incomingVm}); // Send disconnect message
@@ -51,7 +51,7 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
     //todo: retrieve tracked VPN usage from storage and send to page
     if (message.type === 'RetrieveTrackedUsage' && message.ask) {
         const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
-        const trackData = stored.trackData ?? []; // Get the stored VM data
+        const trackData = stored.trackData ?? []; // Get the stored track data
 
         postToPage({
             type: 'RetrieveTrackedUsage',
