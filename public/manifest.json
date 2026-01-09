@@ -22,6 +22,9 @@
     "notifications",
     "alarms"
   ],
+  "optional_permissions": [
+    "background"
+  ],
   "host_permissions": [
     "*://*.vpn.cocomine.cc/*",
     "*://api.cocomine.cc/*",

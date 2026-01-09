@@ -212,6 +212,44 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
 });
 
 /**
+ * Event listener for the `onRemoved` event.
+ * This event is triggered when a window is closed.
+ * Specifically, it checks if the last window is closed and logs the time.
+ */
+chrome.windows.onRemoved.addListener(function(windowId) {
+    chrome.windows.getAll({}, function(windows) {
+        if (windows.length === 0) {
+            console.log("Last window closed, browser likely exiting, logging time.");
+            chrome.storage.local.set({LastClosed: new Date().toISOString()});
+        }
+    });
+});
+
+/**
+ * Event listener for the `onStartup` event.
+ * This event is triggered when the browser starts up.
+ * Specifically, it checks for the last closed time and logs the disconnect time.
+ */
+chrome.runtime.onStartup.addListener(async () => {
+    console.log('Browser is starting up.');
+    const data = await chrome.storage.local.get<{LastClosed?: string}>(['LastClosed'])
+    if (data && data.LastClosed) {
+        console.log('Browser was last closed at:', data.LastClosed);
+        // You can perform any additional actions here if needed
+        const stored = await chrome.storage.local.get<StoredVmData>('vmData');
+        const vmData = stored.vmData;
+        if (vmData) {
+            await logDisconnectTrack(vmData, new Date(data.LastClosed));
+            await logConnectTrack(vmData)
+        }
+        await chrome.storage.local.remove('LastClosed'); // Clear the last closed time after processing
+    } else {
+        console.log('No record of last closed time found.');
+    }
+});
+
+
+/**
  * Create alarms based on the VM data.
  * @param vmData - The VM instance data.
  */

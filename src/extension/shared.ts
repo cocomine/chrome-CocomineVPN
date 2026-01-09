@@ -49,10 +49,11 @@ const enqueueTrackDataUpdate = async (entry: TrackDataType) => {
 /**
  * Log a connect track event.
  * @param data - The VM instance data.
+ * @param datetime - Connect datetime (optional, defaults to now).
  */
-export const logConnectTrack = async (data: VMInstanceDataType) => {
+export const logConnectTrack = async (data: VMInstanceDataType, datetime = new Date()) => {
     const entry = {
-        datetime: new Date().toISOString(),
+        datetime: datetime.toISOString(),
         country: data._country,
         isConnect: true
     };
@@ -62,10 +63,17 @@ export const logConnectTrack = async (data: VMInstanceDataType) => {
 /**
  * Log a disconnect track event.
  * @param data - The VM instance data.
+ * @param datetime - The disconnect datetime (optional, defaults to now).
  */
-export const logDisconnectTrack = async (data: VMInstanceDataType) => {
+export const logDisconnectTrack = async (data: VMInstanceDataType, datetime = new Date()) => {
+    // If an expiration time is set and is earlier than now, use that as the disconnect time
+    if(data._expired){
+        const tmp = new Date(data._expired);
+        datetime = tmp.getTime() < datetime.getTime() ? tmp : datetime;
+    }
+
     const entry = {
-        datetime: new Date().toISOString(),
+        datetime: datetime.toISOString(),
         country: data._country,
         isConnect: false
     };
