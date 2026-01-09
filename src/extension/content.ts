@@ -1,6 +1,8 @@
 import {ensureRuntimeReady, postToPage} from './shared';
 import type {ExtensionMessage, StoredTrackData, StoredVmData, VMInstanceDataType} from './types';
 
+const lock_retrieve_track = false; // to prevent multiple simultaneous sends
+
 /**
  * Listen for messages from the web page and handle them accordingly.
  */
@@ -49,7 +51,7 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
     }
 
     // retrieve tracked VPN usage from storage and send to page
-    if (message.type === 'RetrieveTrackedUsage' && message.ask) {
+    if (!lock_retrieve_track && message.type === 'RetrieveTrackedUsage' && message.ask) {
         const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
         const trackData = stored.trackData ?? []; // Get the stored track data
 

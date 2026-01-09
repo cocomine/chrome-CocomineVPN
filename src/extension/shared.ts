@@ -31,10 +31,12 @@ let trackDataUpdateQueue: Promise<void> = Promise.resolve();
  * are applied sequentially and no events are lost.
  */
 const enqueueTrackDataUpdate = async (entry: TrackDataType) => {
-    /* Chain the new update onto the existing queue
-    Each update reads the current data, appends the new entry, and writes it back
-    When promise resolves, the next update in the queue can proceed
-    When promise still pending, new updates will wait their turn */
+    /**
+     * Chain the new update onto the existing queue
+     * Each update reads the current data, appends the new entry, and writes it back
+     * When promise resolves, the next update in the queue can proceed
+     * When promise still pending, new updates will wait their turn
+     */
     trackDataUpdateQueue = trackDataUpdateQueue.then(async () => {
         const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
         const trackData = stored.trackData || [];
