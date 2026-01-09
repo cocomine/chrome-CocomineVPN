@@ -102,8 +102,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             console.log('Heartbeat ping successful');
             await logConnectTrack(vm); // Log the heartbeat as a connect event
         } catch (e) {
-            console.error('Heartbeat ping failed, disconnecting...', e);
-            await logDisconnectTrack(vm); // Log the heartbeat failure as a disconnect event, but not Disconnect
+            console.error('Heartbeat ping failed', e);
         }
     }
 });

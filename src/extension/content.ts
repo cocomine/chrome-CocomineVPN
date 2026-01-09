@@ -1,7 +1,7 @@
 import {ensureRuntimeReady, postToPage} from './shared';
 import type {ExtensionMessage, StoredTrackData, StoredVmData, VMInstanceDataType} from './types';
 
-const lock_retrieve_track = false; // to prevent multiple simultaneous sends
+let lock_retrieve_track = false; // to prevent multiple simultaneous sends
 
 /**
  * Listen for messages from the web page and handle them accordingly.

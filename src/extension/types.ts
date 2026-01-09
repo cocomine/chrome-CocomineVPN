@@ -97,9 +97,9 @@ export type VMInstanceDataType = {
 /**
  * Tracked VPN usage data shape.
  *
- * @property datetime - Timestamp of the tracking event.
- * @property country - Country/region code associated with the event.
- * @property target - True if connecting, false if disconnecting.
+ * @property {string} datetime - Timestamp of the tracking event.
+ * @property {VMCountryType} country - Country/region code associated with the event.
+ * @property {boolean} isConnect - True if connecting, false if disconnecting
  */
 export type TrackDataType = {
     datetime: string;

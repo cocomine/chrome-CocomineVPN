@@ -41,7 +41,7 @@ const enqueueTrackDataUpdate = async (entry: TrackDataType) => {
         const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
         const trackData = stored.trackData || [];
         trackData.push(entry);
-        await chrome.storage.local.set({ trackData });
+        await chrome.storage.local.set({trackData});
     }).catch((error) => {
         console.error('Failed to update trackData in chrome.storage.local:', error);
     });
@@ -60,7 +60,7 @@ export const logConnectTrack = async (data: VMInstanceDataType, datetime = new D
         isConnect: true
     };
     await enqueueTrackDataUpdate(entry);
-}
+};
 
 /**
  * Log a disconnect track event.
@@ -69,7 +69,7 @@ export const logConnectTrack = async (data: VMInstanceDataType, datetime = new D
  */
 export const logDisconnectTrack = async (data: VMInstanceDataType, datetime = new Date()) => {
     // If an expiration time is set and is earlier than now, use that as the disconnect time
-    if(data._expired){
+    if (data._expired) {
         const tmp = new Date(data._expired);
         datetime = tmp.getTime() < datetime.getTime() ? tmp : datetime;
     }
@@ -77,7 +77,7 @@ export const logDisconnectTrack = async (data: VMInstanceDataType, datetime = ne
     const entry = {
         datetime: datetime.toISOString(),
         country: data._country,
-        isConnect: false
+        isConnect: false,
     };
     await enqueueTrackDataUpdate(entry);
-}
+};
