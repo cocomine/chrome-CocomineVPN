@@ -1,5 +1,6 @@
 import type {RuntimeMessage, StoredVmData, VMInstanceDataType} from './types';
 import {createProxyConfig} from "./createProxyConfig";
+import {logConnectTrack, logDisconnectTrack} from "./shared";
 
 const API_URL = 'https://api.cocomine.cc'; // API endpoint, in this time is only for ping test
 const WEB_URL = process.env.NODE_ENV === "development" ? 'http://localhost:3000' : 'https://vpn.cocomine.cc'; // Web URL for user interactions
@@ -68,25 +69,41 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
 
     // Check if the alarm is for offline time reached
-    if (alarm.name === 'offline-time-rached') {
-        const data = await chrome.storage.local.get<StoredVmData>('vmData');
-        const vm = data.vmData;
-        if (!vm) return;
+    if (alarm.name === 'offline-time-reached') {
         console.log("VPN time reached, disconnecting...");
 
-        // Clear proxy settings and stored VM data
-        await chrome.proxy.settings.clear({});
-        await chrome.storage.local.remove('vmData');
-        await chrome.notifications.clear('disconnectedNotify');
-        await chrome.notifications.create('disconnectedNotify', {
+        const vm = await disconnect();
+        if (!vm) return;
+        await chrome.notifications.create('timeReachedNotify', {
             type: 'basic',
             iconUrl: 'icon-128.png',
             title: 'VPN節點已關閉',
             message: `${vm._country}(${vm._name}) VPN節點已關閉。如有需要請重新連接。`,
+            buttons: [{title: '重新連接'}],
         });
+    }
 
-        // Clear the current alarm
-        await chrome.alarms.clear('offline-time-rached');
+    // Check if the alarm is for heartbeat
+    if (alarm.name === 'heartbeat') {
+        console.log("Heartbeat alarm triggered");
+
+        const data = await chrome.storage.local.get<StoredVmData>('vmData');
+        const vm = data.vmData;
+        if (!vm) return; // No VM data found
+
+        // Send a heartbeat ping to the API
+        try {
+            const response = await fetch(`${API_URL}/ping`, {
+                headers: {'Content-Type': 'application/json'},
+                signal: AbortSignal.timeout(5000)
+            });
+            if (!response.ok) throw new Error('Heartbeat ping failed'); // If response is not OK, throw an error
+
+            console.log('Heartbeat ping successful');
+            await logConnectTrack(vm); // Log the heartbeat as a connect event
+        } catch (e) {
+            console.error('Heartbeat ping failed', e);
+        }
     }
 });
 
@@ -96,14 +113,20 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
  * Specifically, it handles the click event for the 'offlineTimeNotify' notification.
  */
 chrome.notifications.onClicked.addListener(async (notificationId) => {
-    if (notificationId !== 'offlineTimeNotify') return;
+    // Handle click event for 'offlineTimeNotify' notification
+    if (notificationId === 'offlineTimeNotify') {
+        const data = await chrome.storage.local.get<StoredVmData>('vmData');
+        const vm = data.vmData;
+        if (!vm) return; // No VM data found
 
-    const data = await chrome.storage.local.get<StoredVmData>('vmData');
-    const vm = data.vmData;
-    if (!vm) return; // No VM data found
+        // Open the URL to extend time
+        await chrome.tabs.create({url: `${WEB_URL}/${vm._id}#extendTime`});
+    }
 
-    // Open the URL to extend time
-    await chrome.tabs.create({url: `${WEB_URL}/${vm._id}#extendTime`});
+    // Handle click event for 'timeReachedNotify' notification
+    if (notificationId === 'timeReachedNotify') {
+        await chrome.tabs.create({url: `${WEB_URL}`});
+    }
 });
 
 /**
@@ -112,14 +135,20 @@ chrome.notifications.onClicked.addListener(async (notificationId) => {
  * Specifically, it handles the button click event for the 'offline-time-check' notification.
  */
 chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIndex) => {
-    if (notificationId !== 'offlineTimeNotify' || buttonIndex !== 0) return;
+    // Handle button click event for 'offlineTimeNotify' notification
+    if (notificationId === 'offlineTimeNotify' && buttonIndex === 0) {
+        const data = await chrome.storage.local.get<StoredVmData>('vmData');
+        const vm = data.vmData;
+        if (!vm) return; // No VM data found
 
-    const data = await chrome.storage.local.get<StoredVmData>('vmData');
-    const vm = data.vmData;
-    if (!vm) return; // No VM data found
+        // Open the URL to extend time
+        await chrome.tabs.create({url: `${WEB_URL}/${vm._id}#extendTime`});
+    }
 
-    // Open the URL to extend time
-    await chrome.tabs.create({url: `${WEB_URL}/${vm._id}#extendTime`});
+    // Handle button click event for 'timeReachedNotify' notification
+    if (notificationId === 'timeReachedNotify' && buttonIndex === 0) {
+        await chrome.tabs.create({url: `${WEB_URL}`});
+    }
 });
 
 /**
@@ -144,7 +173,10 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
             pingInterval && clearInterval(pingInterval); // Clear any existing ping intervals
             pingInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`${API_URL}/ping`, {headers: {'Content-Type': 'application/json'}, signal: AbortSignal.timeout(1000)})
+                    const response = await fetch(`${API_URL}/ping`, {
+                        headers: {'Content-Type': 'application/json'},
+                        signal: AbortSignal.timeout(1000)
+                    });
                     if (!response.ok) throw new Error('Ping failed'); // If response is not OK, throw an error to trigger the catch block
 
                     // Ping successful
@@ -162,7 +194,11 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
 
                     await createAlarms(vmData); // Create alarms based on the VM data
                     sendResponse({connected: true}); // Send success response
+
                     console.log('Ping successful, proxy is connected');
+
+                    // save connected time to track VPN usage
+                    await logConnectTrack(vmData);
                 } catch (e) {
                     // Ping failed, increment tryCount and check if we should stop trying
                     console.log('Ping attempt failed, retrying...', e);
@@ -180,21 +216,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
 
     // Handle the 'Disconnect' message type
     if (message.type === 'Disconnect') {
-        (async () =>{
-            // Clear proxy settings and stored VM data
-            await chrome.proxy.settings.clear({});
-            await chrome.storage.local.remove('vmData');
-            await chrome.notifications.clear('disconnectedNotify');
-            await chrome.notifications.create('disconnectedNotify', {
-                type: 'basic',
-                iconUrl: 'icon-128.png',
-                title: '已斷開連接',
-                message: '已成功斷開與節點的連接!',
-            });
-            await chrome.alarms.clearAll();
-
-            sendResponse({connected: false}); // Send success response
-        })()
+        disconnect().then(() => sendResponse({connected: false})); // Send success response
         return true;
     }
 
@@ -227,7 +249,41 @@ async function createAlarms(vmData: VMInstanceDataType) {
     });
     // Set up an alarm to disconnect when expiration time is reached
     // Note: This alarm will be created at the exact expiration time
-    await chrome.alarms.create('offline-time-rached', {
+    await chrome.alarms.create('offline-time-reached', {
         when: expiresAt
     });
+    // Set up a heartbeat alarm every 60 minutes
+    await chrome.alarms.create('heartbeat', {
+        periodInMinutes: 60,
+        delayInMinutes: 30
+    });
+}
+
+/**
+ * Disconnect from the proxy and clear settings.
+ */
+async function disconnect(): Promise<VMInstanceDataType | undefined> {
+    // Retrieve stored VM data
+    const stored = await chrome.storage.local.get<StoredVmData>('vmData');
+    const vmData = stored.vmData;
+
+    // Clear proxy settings and stored VM data
+    await chrome.proxy.settings.clear({});
+    await chrome.storage.local.remove('vmData');
+    await chrome.notifications.clear('disconnectedNotify');
+    await chrome.notifications.create('disconnectedNotify', {
+        type: 'basic',
+        iconUrl: 'icon-128.png',
+        title: '已斷開連接',
+        message: '已成功斷開與節點的連接!',
+    });
+    await chrome.alarms.clearAll();
+
+    console.log('Disconnected from proxy');
+
+    // save disconnected time to track VPN usage
+    if (vmData) {
+        await logDisconnectTrack(vmData);
+    }
+    return vmData;
 }

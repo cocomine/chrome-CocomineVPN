@@ -1,5 +1,7 @@
 import {ensureRuntimeReady, postToPage} from './shared';
-import type {ExtensionMessage, StoredVmData, VMInstanceDataType} from './types';
+import type {ExtensionMessage, StoredTrackData, StoredVmData, VMInstanceDataType} from './types';
+
+let lock_retrieve_track = false; // to prevent multiple simultaneous sends
 
 /**
  * Listen for messages from the web page and handle them accordingly.
@@ -41,11 +43,24 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
 
         // Update storage or send disconnect message based on power state
         if (incomingVm._isPowerOn) {
-            //todo: update alarms
+            // When the VM is powered on, refresh alarms so the background script can enforce usage limits and timers for this VM instance
             await chrome.runtime.sendMessage({type: 'AlarmsUpdate', data: incomingVm}); // Send alarms update message
         } else {
             await chrome.runtime.sendMessage({type: 'Disconnect', data: incomingVm}); // Send disconnect message
         }
+    }
+
+    // retrieve tracked VPN usage from storage and send to page
+    if (!lock_retrieve_track && message.type === 'RetrieveTrackedUsage' && message.ask) {
+        const stored = await chrome.storage.local.get<StoredTrackData>('trackData');
+        const trackData = stored.trackData ?? []; // Get the stored track data
+
+        postToPage({
+            type: 'RetrieveTrackedUsage',
+            ask: false,
+            data: trackData
+        });
+        await chrome.storage.local.remove('trackData'); // Clear tracked data after sending
     }
 });
 

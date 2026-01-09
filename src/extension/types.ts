@@ -24,7 +24,7 @@ export type ProxyMode = 'whitelist' | 'blacklist' | 'disable';
  * @property {string} [defaultFontSize] - Optional default font size (e.g. "14px", "1rem").
  */
 export interface DynamicTextProps extends PropsWithChildren {
-  defaultFontSize?: string;
+    defaultFontSize?: string;
 }
 
 /**
@@ -48,10 +48,10 @@ export type VMProviderType = "google" | "azure"
  * @property {string} [url] - Optional remote URL where profile can be downloaded.
  */
 export type VPNProfileType = {
-  "type": "OpenVPN" | "SoftEther" | "SS" | "socks5",
-  "name": string,
-  "filename": string,
-  "url"?: string
+    "type": "OpenVPN" | "SoftEther" | "SS" | "socks5",
+    "name": string,
+    "filename": string,
+    "url"?: string
 }
 
 /**
@@ -81,17 +81,30 @@ export type ReadOnlyModeType = "startOnly" | "stopOnly" | "readOnly" | "disable"
  * @property {string | null} _expired - Optional expiration timestamp or null if not set.
  */
 export type VMInstanceDataType = {
-  readonly _name: string;
-  _status: string;
-  readonly _id: string;
-  readonly _zone: string;
-  readonly _url: string;
-  readonly _country: VMCountryType;
-  readonly _profiles: VPNProfileType[];
-  readonly _provider: VMProviderType;
-  _isPowerOn: boolean;
-  readonly _readonly: ReadOnlyModeType;
-  _expired: string | null;
+    readonly _name: string;
+    _status: string;
+    readonly _id: string;
+    readonly _zone: string;
+    readonly _url: string;
+    readonly _country: VMCountryType;
+    readonly _profiles: VPNProfileType[];
+    readonly _provider: VMProviderType;
+    _isPowerOn: boolean;
+    readonly _readonly: ReadOnlyModeType;
+    _expired: string | null;
+}
+
+/**
+ * Tracked VPN usage data shape.
+ *
+ * @property {string} datetime - Timestamp of the tracking event.
+ * @property {VMCountryType} country - Country/region code associated with the event.
+ * @property {boolean} isConnect - True if connecting, false if disconnecting
+ */
+export type TrackDataType = {
+    datetime: string;
+    country: VMCountryType;
+    isConnect: boolean;
 }
 
 /**
@@ -100,18 +113,18 @@ export type VMInstanceDataType = {
  * Sent from the UI to the extension runtime to query installation state.
  */
 export interface ExtensionInstalledRequest {
-  type: 'ExtensionInstalled';
-  ask: true;
-  data?: undefined;
+    type: 'ExtensionInstalled';
+    ask: true;
+    data?: undefined;
 }
 
 /**
  * Response indicating whether the extension is installed and its version.
  */
 export interface ExtensionInstalledResponse {
-  type: 'ExtensionInstalled';
-  ask: false;
-  data: { installed: boolean; version: string };
+    type: 'ExtensionInstalled';
+    ask: false;
+    data: { installed: boolean; version: string };
 }
 
 /**
@@ -120,18 +133,18 @@ export interface ExtensionInstalledResponse {
  * Contains the VM instance data to be used by the runtime for initiating connection.
  */
 export interface ConnectRequest {
-  type: 'Connect';
-  ask: true;
-  data: VMInstanceDataType;
+    type: 'Connect';
+    ask: true;
+    data: VMInstanceDataType;
 }
 
 /**
  * Response to a connect request indicating success or failure.
  */
 export interface ConnectResponse {
-  type: 'Connect';
-  ask: false;
-  data: { connected: boolean };
+    type: 'Connect';
+    ask: false;
+    data: { connected: boolean };
 }
 
 /**
@@ -140,32 +153,51 @@ export interface ConnectResponse {
  * Commonly used to sync available VMs from runtime to the extension.
  */
 export interface PostVMDataMessage {
-  type: 'PostVMData';
-  ask: boolean;
-  data: VMInstanceDataType[];
+    type: 'PostVMData';
+    ask: boolean;
+    data: VMInstanceDataType[];
+}
+
+/**
+ * Message for retrieving tracked VPN usage data.
+ *
+ * Sent from the UI to the extension runtime to request tracked usage information.
+ */
+export interface RetrieveTrackedUsageMessage {
+    type: 'RetrieveTrackedUsage';
+    ask: boolean;
+    data: TrackDataType[];
 }
 
 /**
  * Union of extension <-> host messages handled by the UI/extension runtime bridge.
  */
 export type ExtensionMessage =
-  | ExtensionInstalledRequest
-  | ExtensionInstalledResponse
-  | ConnectRequest
-  | ConnectResponse
-  | PostVMDataMessage;
+    | ExtensionInstalledRequest
+    | ExtensionInstalledResponse
+    | ConnectRequest
+    | ConnectResponse
+    | PostVMDataMessage
+    | RetrieveTrackedUsageMessage;
 
 /**
  * Runtime-origin messages representing VM events or updates.
  */
 export type RuntimeMessage =
-  | { type: 'Connect' | 'Disconnect' | 'AlarmsUpdate'; data: VMInstanceDataType }
+    | { type: 'Connect' | 'Disconnect' | 'AlarmsUpdate'; data: VMInstanceDataType }
 
 /**
  * Shape stored in persistent storage for VM-related data.
  */
 export interface StoredVmData {
-  vmData?: VMInstanceDataType;
+    vmData?: VMInstanceDataType;
+}
+
+/**
+ * Shape stored in persistent storage for tracked VPN usage data.
+ */
+export interface StoredTrackData {
+    trackData?: TrackDataType[];
 }
 
 /**
@@ -175,8 +207,8 @@ export interface StoredVmData {
  * - proxyMode: current proxy mode (whitelist/blacklist/disable).
  */
 export interface ProxyFlags {
-  chatGPTOnly?: boolean;
-  proxyMode?: ProxyMode;
+    chatGPTOnly?: boolean;
+    proxyMode?: ProxyMode;
 }
 
 /**
@@ -187,9 +219,9 @@ export interface ProxyFlags {
  * @property {string} url - The URL to be added.
  */
 export interface AddURLModalProps {
-  show: boolean;
-  onHide: () => void;
-  url: string;
+    show: boolean;
+    onHide: () => void;
+    url: string;
 }
 
 /**
@@ -200,9 +232,9 @@ export interface AddURLModalProps {
  * @property {function} [onHover] - Optional callback function to handle hovering over a URL.
  */
 export interface URLSelectorProps {
-  value: string;
-  onSelect: (value: string) => void;
-  onHover?: (value: string | null) => void;
+    value: string;
+    onSelect: (value: string) => void;
+    onHover?: (value: string | null) => void;
 }
 
 /**
