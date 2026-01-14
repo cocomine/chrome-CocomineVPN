@@ -1,5 +1,5 @@
-import {ensureRuntimeReady, postToPage} from './shared';
-import type {ExtensionMessage, StoredTrackData, StoredVmData, VMInstanceDataType} from './types';
+import {ensureRuntimeReady, findVmById, postToPage} from './shared';
+import type {ExtensionMessage, RuntimeMessage, StoredTrackData, StoredVmData} from './types';
 
 let lock_retrieve_track = false; // to prevent multiple simultaneous sends
 
@@ -44,9 +44,9 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
         // Update storage or send disconnect message based on power state
         if (incomingVm._isPowerOn) {
             // When the VM is powered on, refresh alarms so the background script can enforce usage limits and timers for this VM instance
-            await chrome.runtime.sendMessage({type: 'AlarmsUpdate', data: incomingVm}); // Send alarms update message
+            await chrome.runtime.sendMessage<RuntimeMessage>({type: 'AlarmsUpdate', data: incomingVm}); // Send alarms update message
         } else {
-            await chrome.runtime.sendMessage({type: 'Disconnect', data: incomingVm}); // Send disconnect message
+            await chrome.runtime.sendMessage<RuntimeMessage>({type: 'Disconnect'}); // Send disconnect message
         }
     }
 
@@ -62,12 +62,12 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
         });
         await chrome.storage.local.remove('trackData'); // Clear tracked data after sending
     }
+
+    // Handle 'ConnectByExtension' message
+    if(message.type === 'ConnectByExtension' && message.ask){
+        const response = await chrome.runtime.sendMessage<RuntimeMessage, {connectByExtension: boolean}>({type: 'ConnectByExtension'})
+        postToPage({type: 'ConnectByExtension', ask: false, data: {connectByExtension: response.connectByExtension}});
+        return;
+    }
 });
 
-/**
- * Find a VM by its ID in a list of VMs.
- * @param list - The list of VMs to search.
- * @param id - The ID of the VM to find.
- * @returns The VM with the matching ID, or undefined if not found.
- */
-const findVmById = (list: VMInstanceDataType[], id: string) => list.find((entry) => entry?._id === id);

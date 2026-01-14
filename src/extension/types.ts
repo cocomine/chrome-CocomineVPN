@@ -178,13 +178,15 @@ export type ExtensionMessage =
     | ConnectRequest
     | ConnectResponse
     | PostVMDataMessage
-    | RetrieveTrackedUsageMessage;
+    | RetrieveTrackedUsageMessage
+    | ConnectByExtensionMessageData;
 
 /**
  * Runtime-origin messages representing VM events or updates.
  */
 export type RuntimeMessage =
-    | { type: 'Connect' | 'Disconnect' | 'AlarmsUpdate'; data: VMInstanceDataType }
+    | { type: 'Connect' | 'AlarmsUpdate'; data: VMInstanceDataType }
+    | { type: 'ConnectByExtension' | 'Disconnect' }
 
 /**
  * Shape stored in persistent storage for VM-related data.
@@ -250,3 +252,15 @@ export type MaskType = 'black' | 'transparent' | `rgba(0,0,0,${number})`
  * Keys are 'whitelist' | 'blacklist' and values are arrays of URL strings.
  */
 export type StorageLists = Partial<Record<Exclude<ProxyMode, 'disable'>, string[]>>;
+
+/**
+ * Retrieve Tracked Usage post message data shape.
+ */
+export interface ConnectByExtensionMessageData {
+    type: 'ConnectByExtension';
+    ask: boolean;
+    data: {
+        // True is connect, false is disconnect.
+        connectByExtension: boolean;
+    }
+}

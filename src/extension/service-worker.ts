@@ -17,7 +17,7 @@ chrome.runtime.onInstalled.addListener(async ({reason}) => {
         await chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md'});
     } else if (reason === 'update') {
         console.log("Extension updated");
-        await chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#200'});
+        await chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#220'});
     }
 });
 
@@ -94,7 +94,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         // Send a heartbeat ping to the API
         try {
             const response = await fetch(`${API_URL}/ping`, {
-                headers: {'Content-Type': 'application/json'},
+                method: 'HEAD',
+                mode: 'no-cors',
                 signal: AbortSignal.timeout(5000)
             });
             if (!response.ok) throw new Error('Heartbeat ping failed'); // If response is not OK, throw an error
@@ -174,7 +175,8 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
             pingInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`${API_URL}/ping`, {
-                        headers: {'Content-Type': 'application/json'},
+                        method: 'HEAD',
+                        mode: 'no-cors',
                         signal: AbortSignal.timeout(1000)
                     });
                     if (!response.ok) throw new Error('Ping failed'); // If response is not OK, throw an error to trigger the catch block
@@ -230,6 +232,23 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
             sendResponse({updated: true}); // Send success response
         })()
         return true;
+    }
+
+    // Handle the 'ConnectByExtension' message type
+    if (message.type === 'ConnectByExtension') {
+        (async () => {
+            // Get the current proxy settings
+            const config = await chrome.proxy.settings.get({});
+            const value = config.value
+            console.debug(config) //debug
+
+            // Check if connected to vpn.cocomine.cc
+            if (config.levelOfControl === 'controlled_by_this_extension' && (value.mode === 'fixed_servers' || value.mode === 'pac_script')) {
+                sendResponse({connectByExtension: true});
+            } else {
+                sendResponse({connectByExtension: false});
+            }
+        })();
     }
     return false;
 });
