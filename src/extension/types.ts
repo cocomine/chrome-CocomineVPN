@@ -185,8 +185,10 @@ export type ExtensionMessage =
  * Runtime-origin messages representing VM events or updates.
  */
 export type RuntimeMessage =
-    | { type: 'Connect' | 'AlarmsUpdate'; data: VMInstanceDataType }
-    | { type: 'ConnectByExtension' | 'Disconnect' }
+    | { type: 'Connect'; data: VMInstanceDataType }
+    | { type: 'AlarmsUpdate'; data: VMInstanceDataType }
+    | { type: 'Disconnect'; data: VMInstanceDataType }
+    | { type: 'ConnectByExtension' }
 
 /**
  * Shape stored in persistent storage for VM-related data.
