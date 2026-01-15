@@ -81,3 +81,11 @@ export const logDisconnectTrack = async (data: VMInstanceDataType, datetime = ne
     };
     await enqueueTrackDataUpdate(entry);
 };
+
+/**
+ * Find a VM by its ID in a list of VMs.
+ * @param list - The list of VMs to search.
+ * @param id - The ID of the VM to find.
+ * @returns The VM with the matching ID, or undefined if not found.
+ */
+export const findVmById = (list: VMInstanceDataType[], id: string) => list.find((entry) => entry?._id === id);
