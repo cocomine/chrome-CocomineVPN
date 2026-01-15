@@ -249,6 +249,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
                 sendResponse({connectByExtension: false});
             }
         })();
+        return true;
     }
     return false;
 });
