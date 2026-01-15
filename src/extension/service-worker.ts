@@ -47,7 +47,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
                 message: `${vm._country}(${vm._name}) VPN節點即將1小時內關閉。如有需要請點擊延長開放時間。`,
                 buttons: [{title: '延長開放時間'}],
             });
-            return
+            return;
         }
 
         // Less than 30 minutes left but more than 0 minutes left
@@ -61,7 +61,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
                 message: `${vm._country}(${vm._name}) VPN節點即將30分鐘內關閉。如有需要請點擊延長開放時間。`,
                 buttons: [{title: '延長開放時間'}],
             });
-            return
+            return;
         }
 
         // Clear the current alarm
@@ -95,7 +95,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         try {
             const response = await fetch(`${API_URL}/ping`, {
                 method: 'HEAD',
-                mode: 'no-cors',
                 signal: AbortSignal.timeout(5000)
             });
             if (!response.ok) throw new Error('Heartbeat ping failed'); // If response is not OK, throw an error
@@ -163,9 +162,9 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
     // Handle the 'Connect' message type
     if (message.type === 'Connect') {
         (async () => {
-            const {config, vmData, cleanup} = await createProxyConfig(message.data)
+            const {config, vmData, cleanup} = await createProxyConfig(message.data);
             console.debug(config, vmData, cleanup); //debug
-            await chrome.proxy.settings.set({value: config, scope: 'regular'})
+            await chrome.proxy.settings.set({value: config, scope: 'regular'});
             if (cleanup) cleanup();
 
             // every 1s, send request to /ping to check if the proxy is connected
@@ -176,7 +175,6 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
                 try {
                     const response = await fetch(`${API_URL}/ping`, {
                         method: 'HEAD',
-                        mode: 'no-cors',
                         signal: AbortSignal.timeout(1000)
                     });
                     if (!response.ok) throw new Error('Ping failed'); // If response is not OK, throw an error to trigger the catch block
@@ -212,7 +210,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
                     }
                 }
             }, 1000);
-        })()
+        })();
         return true;
     }
 
@@ -230,7 +228,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
             await createAlarms(vmData); // Update alarms based on new VM data
             await chrome.storage.local.set({vmData}); // Update stored VM data
             sendResponse({updated: true}); // Send success response
-        })()
+        })();
         return true;
     }
 
@@ -239,8 +237,8 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
         (async () => {
             // Get the current proxy settings
             const config = await chrome.proxy.settings.get({});
-            const value = config.value
-            console.debug(config) //debug
+            const value = config.value;
+            console.debug(config); //debug
 
             // Check if connected to vpn.cocomine.cc
             if (config.levelOfControl === 'controlled_by_this_extension' && (value.mode === 'fixed_servers' || value.mode === 'pac_script')) {

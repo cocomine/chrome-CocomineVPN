@@ -26,7 +26,7 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
 
     // Handle 'Connect' message
     if (message.type === 'Connect' && message.ask) {
-        const response = await chrome.runtime.sendMessage({type: 'Connect', data: message.data})
+        const response = await chrome.runtime.sendMessage({type: 'Connect', data: message.data});
         postToPage({type: 'Connect', ask: false, data: {connected: Boolean(response?.connected)}});
         return;
     }
@@ -64,8 +64,10 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
     }
 
     // Handle 'ConnectByExtension' message
-    if(message.type === 'ConnectByExtension' && message.ask){
-        const response = await chrome.runtime.sendMessage<RuntimeMessage, {connectByExtension: boolean}>({type: 'ConnectByExtension'})
+    if (message.type === 'ConnectByExtension' && message.ask) {
+        const response = await chrome.runtime.sendMessage<RuntimeMessage, {
+            connectByExtension: boolean
+        }>({type: 'ConnectByExtension'});
         postToPage({type: 'ConnectByExtension', ask: false, data: {connectByExtension: response.connectByExtension}});
         return;
     }

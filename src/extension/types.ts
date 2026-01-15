@@ -254,7 +254,10 @@ export type MaskType = 'black' | 'transparent' | `rgba(0,0,0,${number})`
 export type StorageLists = Partial<Record<Exclude<ProxyMode, 'disable'>, string[]>>;
 
 /**
- * Retrieve Tracked Usage post message data shape.
+ * ConnectByExtension post message data shape.
+ *
+ * Represents the message payload used to request connecting or disconnecting
+ * via the extension.
  */
 export interface ConnectByExtensionMessageData {
     type: 'ConnectByExtension';
@@ -262,5 +265,5 @@ export interface ConnectByExtensionMessageData {
     data: {
         // True is connect, false is disconnect.
         connectByExtension: boolean;
-    }
+    };
 }
