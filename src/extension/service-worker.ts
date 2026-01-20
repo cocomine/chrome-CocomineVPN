@@ -1,4 +1,4 @@
-import type {RuntimeMessage, StoredVmData, VMInstanceDataType} from './types';
+import {RuntimeMessage, StoredHTTPSCertData, StoredVmData, VMInstanceDataType} from './types';
 import {createProxyConfig} from "./createProxyConfig";
 import {logConnectTrack, logDisconnectTrack} from "./shared";
 
@@ -17,7 +17,7 @@ chrome.runtime.onInstalled.addListener(async ({reason}) => {
         await chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md'});
     } else if (reason === 'update') {
         console.log("Extension updated");
-        await chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#220'});
+        await chrome.tabs.create({url: 'https://github.com/cocomine/chrome-vpn/blob/master/README.md#230'});
     }
 });
 
@@ -162,10 +162,13 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
     // Handle the 'Connect' message type
     if (message.type === 'Connect') {
         (async () => {
-            const {config, vmData, cleanup} = await createProxyConfig(message.data);
+            const {config, vmData, cleanup} = await createProxyConfig(message.data.vm_data);
             console.debug(config, vmData, cleanup); //debug
             await chrome.proxy.settings.set({value: config, scope: 'regular'});
             if (cleanup) cleanup();
+
+            // save https setting to session storage for background use
+            await chrome.storage.session.set({'https_setting': message.data.setting});
 
             // every 1s, send request to /ping to check if the proxy is connected
             // terminate after 60s if not connected
@@ -251,6 +254,41 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
     }
     return false;
 });
+
+/**
+ * Event listener for the `onAuthRequired` event.
+ * This event is triggered when a request requires authentication.
+ * Specifically, it provides basic authentication credentials for a specific URL.
+ */
+chrome.webRequest.onAuthRequired.addListener(function (details, callbackFn) {
+        if (!callbackFn) return undefined;
+
+        // Check if the request URL matches the target URL
+        if (!details.challenger.host.includes('vpn.cocomine.cc')) {
+            return undefined; // Not the target URL, do nothing
+        }
+
+        // get credentials from session storage
+        chrome.storage.session.get<StoredHTTPSCertData>(['https_setting']).then((data) => {
+            // No HTTPS setting found
+            if (!data.https_setting) {
+                console.error('No HTTPS setting found in session storage');
+                callbackFn({cancel: true});
+                return;
+            }
+
+            // Provide basic authentication credentials
+            callbackFn({
+                authCredentials: {
+                    username: data.https_setting.username,
+                    password: data.https_setting.password
+                }
+            });
+        });
+    },
+    {urls: ['<all_urls>']},
+    ['asyncBlocking']
+);
 
 /**
  * Create alarms based on the VM data.

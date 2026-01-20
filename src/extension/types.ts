@@ -40,6 +40,42 @@ export type VMCountryType = "TW" | "JP" | "US" | "HK" | "UK" | string
 export type VMProviderType = "google" | "azure"
 
 /**
+ * VPN profile type.
+ */
+export type vpnType = "OpenVPN" | "SoftEther" | "SS" | "socks5" | "https";
+
+/* ====== profiles type ==== */
+export interface base_profile {
+    "type": vpnType,
+    name: string
+}
+
+export interface openvpn_profile extends base_profile {
+    "type": "OpenVPN",
+    "filename": string
+}
+
+export interface softether_profile extends base_profile {
+    "type": "SoftEther",
+    "filename": string
+}
+
+export interface ss_profile extends base_profile {
+    "type": "SS",
+    "url": string
+}
+
+export interface socks5_profile extends base_profile {
+    "type": "socks5",
+    "url": string
+}
+
+export interface https_profile extends base_profile {
+    "type": "https",
+    "url": string
+}
+
+/**
  * VPN profile representation.
  *
  * @property {"OpenVPN" | "SoftEther" | "SS" | "socks5"} type - Profile transport/type.
@@ -47,12 +83,8 @@ export type VMProviderType = "google" | "azure"
  * @property {string} filename - Local filename associated with the profile.
  * @property {string} [url] - Optional remote URL where profile can be downloaded.
  */
-export type VPNProfileType = {
-    "type": "OpenVPN" | "SoftEther" | "SS" | "socks5",
-    "name": string,
-    "filename": string,
-    "url"?: string
-}
+export type VPNProfileType = openvpn_profile | softether_profile | ss_profile | socks5_profile | https_profile;
+/* ========================== */
 
 /**
  * Read-only mode controls UI action availability.
@@ -128,6 +160,16 @@ export interface ExtensionInstalledResponse {
 }
 
 /**
+ * HTTPS certificate settings for VM connection.
+ */
+export interface httpsCert {
+    type: 'https',
+    vm_id: string,
+    username: string,
+    password: string
+}
+
+/**
  * Request to connect to a VM instance.
  *
  * Contains the VM instance data to be used by the runtime for initiating connection.
@@ -135,7 +177,10 @@ export interface ExtensionInstalledResponse {
 export interface ConnectRequest {
     type: 'Connect';
     ask: true;
-    data: VMInstanceDataType;
+    data: {
+        setting: httpsCert,
+        vm_data: VMInstanceDataType
+    };
 }
 
 /**
@@ -185,16 +230,28 @@ export type ExtensionMessage =
  * Runtime-origin messages representing VM events or updates.
  */
 export type RuntimeMessage =
-    | { type: 'Connect'; data: VMInstanceDataType }
-    | { type: 'AlarmsUpdate'; data: VMInstanceDataType }
-    | { type: 'Disconnect'; data: VMInstanceDataType }
-    | { type: 'ConnectByExtension' }
+    | {
+    type: 'Connect';
+    data: {
+        setting: httpsCert,
+        vm_data: VMInstanceDataType
+    }
+} | { type: 'AlarmsUpdate'; data: VMInstanceDataType }
+    | { type: 'Disconnect' }
+    | { type: 'ConnectByExtension' };
 
 /**
  * Shape stored in persistent storage for VM-related data.
  */
 export interface StoredVmData {
     vmData?: VMInstanceDataType;
+}
+
+/**
+ * Shape stored in persistent storage for HTTPS certificate settings.
+ */
+export interface StoredHTTPSCertData {
+    https_setting?: httpsCert;
 }
 
 /**
@@ -268,4 +325,13 @@ export interface ConnectByExtensionMessageData {
         // True is connect, false is disconnect.
         connectByExtension: boolean;
     };
+}
+
+/**
+ * Result of creating a proxy configuration
+ */
+export interface ProxyConfigResult {
+    config: chrome.proxy.ProxyConfig;
+    vmData: VMInstanceDataType;
+    cleanup?: () => void;
 }

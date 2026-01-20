@@ -26,8 +26,12 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
 
     // Handle 'Connect' message
     if (message.type === 'Connect' && message.ask) {
-        const response = await chrome.runtime.sendMessage({type: 'Connect', data: message.data});
-        postToPage({type: 'Connect', ask: false, data: {connected: Boolean(response?.connected)}});
+        // send connect request to background script
+        const response = await chrome.runtime.sendMessage<RuntimeMessage, { connected: boolean }>({
+            type: 'Connect',
+            data: message.data
+        });
+        postToPage({type: 'Connect', ask: false, data: {connected: response.connected}});
         return;
     }
 
