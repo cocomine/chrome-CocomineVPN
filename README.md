@@ -13,7 +13,7 @@ Cocomine VPN Extension
 + 本插件不會干擾您的瀏覽體驗，您可以隨時啟用或禁用本插件。
 + 本插件幫助您更改您的IP位址和位置。
 + 本插件是免費的，但Cocomine VPN服務可能需要付費訂閱。
-+ 本插件使用https協議連接接點, 提供更安全的連接保障.
++ 本插件使用https協議連接節點, 提供更安全的連接保障.
 + 如果您有任何問題或建議，請隨時通過電子郵件與我們聯繫：[cocomine@cocomine.cc](mailto:cocomine@cocomine.cc)
 
 使用方法

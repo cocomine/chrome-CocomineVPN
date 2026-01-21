@@ -1,4 +1,4 @@
-import type {https_profile, ProxyConfigResult, ProxyFlags, ProxyMode, VMInstanceDataType} from './types';
+import type {ProxyConfigResult, ProxyFlags, ProxyMode, VMInstanceDataType} from './types';
 
 export const createProxyConfig = (vmData: VMInstanceDataType): Promise<ProxyConfigResult> => {
     return new Promise(async (resolve) => {
@@ -32,8 +32,8 @@ export const createProxyConfig = (vmData: VMInstanceDataType): Promise<ProxyConf
         }
 
         // Default to fixed HTTPS proxy
-        const profile = vmData._profiles.find((p) => p.type === 'https') as https_profile;
-        if (!(profile && profile.url)) {
+        const profile = vmData._profiles.find((p) => p.type === 'https');
+        if (!profile || profile.type !== 'https') {
             // No HTTPS profile found, use direct connection
             resolve({config: {mode: 'direct'}, vmData});
             return;
@@ -54,8 +54,8 @@ export const createProxyConfig = (vmData: VMInstanceDataType): Promise<ProxyConf
 // create a PAC script that routes traffic through the HTTPS proxy for ChatGPT related domains
 const createChatGPTPac = (vm: VMInstanceDataType) => {
     // find the HTTPS profile
-    const profile = vm._profiles.find((p) => p.type === 'https') as https_profile;
-    if (!profile) return '';
+    const profile = vm._profiles.find((p) => p.type === 'https');
+    if (!profile || profile.type !== 'https') return 'function FindProxyForURL(url, host){return "DIRECT"}';
 
     // return the PAC script
     return `
@@ -69,8 +69,8 @@ const createChatGPTPac = (vm: VMInstanceDataType) => {
 
 // create a PAC script that routes traffic through the HTTPS proxy for custom url list
 const createCustomPac = (vm: VMInstanceDataType, mode: ProxyMode, urls: string[]) => {
-    const profile = vm._profiles.find((p) => p.type === 'https') as https_profile; // Find the HTTPS profile
-    if (!profile) return ''; // Return empty string if no HTTPS profile found
+    const profile = vm._profiles.find((p) => p.type === 'https'); // Find the HTTPS profile
+    if (!profile || profile.type !== 'https') return 'function FindProxyForURL(url, host){return "DIRECT"}'; // Return empty string if no HTTPS profile found
 
     // Create condition based on mode
     const condition =

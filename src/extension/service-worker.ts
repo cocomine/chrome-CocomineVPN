@@ -1,8 +1,9 @@
-import {RuntimeMessage, StoredHTTPSCertData, StoredVmData, VMInstanceDataType} from './types';
+import type {RuntimeMessage, StoredHTTPSCertData, StoredVmData, VMInstanceDataType} from './types';
 import {createProxyConfig} from "./createProxyConfig";
 import {logConnectTrack, logDisconnectTrack} from "./shared";
 
 const API_URL = 'https://api.cocomine.cc'; // API endpoint, in this time is only for ping test
+const PROXY_HOSTNAME = 'vpn.cocomine.cc'; // Proxy hostname
 const WEB_URL = process.env.NODE_ENV === "development" ? 'http://localhost:3000' : 'https://vpn.cocomine.cc'; // Web URL for user interactions
 let pingInterval: NodeJS.Timeout | undefined; // To hold the interval ID for pinging
 
@@ -264,7 +265,7 @@ chrome.webRequest.onAuthRequired.addListener(function (details, callbackFn) {
         if (!callbackFn) return undefined;
 
         // Check if the request URL matches the target URL
-        if (!details.challenger.host.includes('vpn.cocomine.cc')) {
+        if (!details.challenger.host.includes(PROXY_HOSTNAME)) {
             return undefined; // Not the target URL, do nothing
         }
 
@@ -284,6 +285,9 @@ chrome.webRequest.onAuthRequired.addListener(function (details, callbackFn) {
                     password: data.https_setting.password
                 }
             });
+        }).catch((error) => {
+            console.error('Failed to retrieve HTTPS setting from session storage', error);
+            callbackFn({cancel: true});
         });
     },
     {urls: ['<all_urls>']},

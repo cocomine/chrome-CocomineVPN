@@ -42,37 +42,37 @@ export type VMProviderType = "google" | "azure"
 /**
  * VPN profile type.
  */
-export type vpnType = "OpenVPN" | "SoftEther" | "SS" | "socks5" | "https";
+export type VPNType = "OpenVPN" | "SoftEther" | "SS" | "socks5" | "https";
 
 /* ====== profiles type ==== */
-export interface base_profile {
-    "type": vpnType,
+export interface BaseProfile {
+    type: VPNType,
     name: string
 }
 
-export interface openvpn_profile extends base_profile {
-    "type": "OpenVPN",
-    "filename": string
+export interface OpenvpnProfile extends BaseProfile {
+    type: "OpenVPN",
+    filename: string
 }
 
-export interface softether_profile extends base_profile {
-    "type": "SoftEther",
-    "filename": string
+export interface SoftetherProfile extends BaseProfile {
+    type: "SoftEther",
+    filename: string
 }
 
-export interface ss_profile extends base_profile {
-    "type": "SS",
-    "url": string
+export interface SSProfile extends BaseProfile {
+    type: "SS",
+    url: string
 }
 
-export interface socks5_profile extends base_profile {
-    "type": "socks5",
-    "url": string
+export interface Socks5Profile extends BaseProfile {
+    type: "socks5",
+    url: string
 }
 
-export interface https_profile extends base_profile {
+export interface HttpsProfile extends BaseProfile {
     "type": "https",
-    "url": string
+    url: string
 }
 
 /**
@@ -83,7 +83,7 @@ export interface https_profile extends base_profile {
  * @property {string} filename - Local filename associated with the profile.
  * @property {string} [url] - Optional remote URL where profile can be downloaded.
  */
-export type VPNProfileType = openvpn_profile | softether_profile | ss_profile | socks5_profile | https_profile;
+export type VPNProfileType = OpenvpnProfile | SoftetherProfile | SSProfile | Socks5Profile | HttpsProfile;
 /* ========================== */
 
 /**
@@ -162,9 +162,7 @@ export interface ExtensionInstalledResponse {
 /**
  * HTTPS certificate settings for VM connection.
  */
-export interface httpsCert {
-    type: 'https',
-    vm_id: string,
+export interface HttpsCert {
     username: string,
     password: string
 }
@@ -178,7 +176,7 @@ export interface ConnectRequest {
     type: 'Connect';
     ask: true;
     data: {
-        setting: httpsCert,
+        setting: HttpsCert,
         vm_data: VMInstanceDataType
     };
 }
@@ -233,7 +231,7 @@ export type RuntimeMessage =
     | {
     type: 'Connect';
     data: {
-        setting: httpsCert,
+        setting: HttpsCert,
         vm_data: VMInstanceDataType
     }
 } | { type: 'AlarmsUpdate'; data: VMInstanceDataType }
@@ -251,7 +249,7 @@ export interface StoredVmData {
  * Shape stored in persistent storage for HTTPS certificate settings.
  */
 export interface StoredHTTPSCertData {
-    https_setting?: httpsCert;
+    https_setting?: HttpsCert;
 }
 
 /**

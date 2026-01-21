@@ -31,7 +31,7 @@ window.addEventListener('message', async (event: MessageEvent<ExtensionMessage>)
             type: 'Connect',
             data: message.data
         });
-        postToPage({type: 'Connect', ask: false, data: {connected: response.connected}});
+        postToPage({type: 'Connect', ask: false, data: {connected: Boolean(response.connected)}});
         return;
     }
 
