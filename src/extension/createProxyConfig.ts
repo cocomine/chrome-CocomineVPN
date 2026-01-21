@@ -1,10 +1,4 @@
-import type {ProxyFlags, ProxyMode, VMInstanceDataType} from './types';
-
-export interface ProxyConfigResult {
-    config: chrome.proxy.ProxyConfig;
-    vmData: VMInstanceDataType;
-    cleanup?: () => void;
-}
+import type {ProxyConfigResult, ProxyFlags, ProxyMode, VMInstanceDataType} from './types';
 
 export const createProxyConfig = (vmData: VMInstanceDataType): Promise<ProxyConfigResult> => {
     return new Promise(async (resolve) => {
@@ -37,10 +31,10 @@ export const createProxyConfig = (vmData: VMInstanceDataType): Promise<ProxyConf
             return;
         }
 
-        // Default to fixed SOCKS5 proxy
-        const profile = vmData._profiles.find((p) => p.type === 'socks5');
-        if (!(profile && profile.url)) {
-            // No SOCKS5 profile found, use direct connection
+        // Default to fixed HTTPS proxy
+        const profile = vmData._profiles.find((p) => p.type === 'https');
+        if (!profile || profile.type !== 'https') {
+            // No HTTPS profile found, use direct connection
             resolve({config: {mode: 'direct'}, vmData});
             return;
         }
@@ -50,33 +44,33 @@ export const createProxyConfig = (vmData: VMInstanceDataType): Promise<ProxyConf
         resolve({
             config: {
                 mode: 'fixed_servers',
-                rules: {singleProxy: {scheme: 'socks5', host, port: parseInt(port, 10)}},
+                rules: {singleProxy: {scheme: 'https', host, port: parseInt(port, 10)}},
             },
             vmData,
         });
     });
 };
 
-// create a PAC script that routes traffic through the SOCKS5 proxy for ChatGPT related domains
+// create a PAC script that routes traffic through the HTTPS proxy for ChatGPT related domains
 const createChatGPTPac = (vm: VMInstanceDataType) => {
-    // find the SOCKS5 profile
-    const profile = vm._profiles.find((p) => p.type === 'socks5');
-    if (!profile) return '';
+    // find the HTTPS profile
+    const profile = vm._profiles.find((p) => p.type === 'https');
+    if (!profile || profile.type !== 'https') return 'function FindProxyForURL(url, host){return "DIRECT"}';
 
     // return the PAC script
     return `
     function FindProxyForURL(url, host){
         if (dnsDomainIs(host, "openai.com") || dnsDomainIs(host, "chatgpt.com") || dnsDomainIs(host, "api.cocomine.cc") || dnsDomainIs(host, "sora.com")){
-            return "SOCKS5 ${profile.url}";
+            return "HTTPS ${profile.url}";
         }
         return "DIRECT";
     }`.replace(/\n/g, '');
 };
 
-// create a PAC script that routes traffic through the SOCKS5 proxy for custom url list
+// create a PAC script that routes traffic through the HTTPS proxy for custom url list
 const createCustomPac = (vm: VMInstanceDataType, mode: ProxyMode, urls: string[]) => {
-    const profile = vm._profiles.find((p) => p.type === 'socks5'); // Find the SOCKS5 profile
-    if (!profile) return ''; // Return empty string if no SOCKS5 profile found
+    const profile = vm._profiles.find((p) => p.type === 'https'); // Find the HTTPS profile
+    if (!profile || profile.type !== 'https') return 'function FindProxyForURL(url, host){return "DIRECT"}'; // Return empty string if no HTTPS profile found
 
     // Create condition based on mode
     const condition =
@@ -88,7 +82,7 @@ const createCustomPac = (vm: VMInstanceDataType, mode: ProxyMode, urls: string[]
     return `
     function FindProxyForURL(url, host){
         if (dnsDomainIs(host, "api.cocomine.cc") || ${condition}){
-            return "SOCKS5 ${profile.url}";
+            return "HTTPS ${profile.url}";
         }
         return "DIRECT";
     }`.replace(/\n/g, '');
