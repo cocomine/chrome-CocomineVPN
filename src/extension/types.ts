@@ -147,7 +147,9 @@ export type TrackDataType = {
 export interface ExtensionInstalledRequest {
     type: 'ExtensionInstalled';
     ask: true;
-    data?: undefined;
+    data: {
+        version: string;
+    };
 }
 
 /**
