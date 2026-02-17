@@ -169,7 +169,9 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
             if (cleanup) cleanup();
 
             // save https setting to session storage for background use
-            await chrome.storage.session.set({'https_setting': message.data.setting});
+            if(message.data.setting){
+                await chrome.storage.session.set({'https_setting': message.data.setting});
+            }
 
             // every 1s, send request to /ping to check if the proxy is connected
             // terminate after 60s if not connected
