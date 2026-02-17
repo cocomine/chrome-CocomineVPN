@@ -24,7 +24,7 @@ export const ChatGPTOnly: React.FC = () => {
         if (vmData === null) return;
 
         // reconnect
-        await chrome.runtime.sendMessage({type: "Connect", data: vmData});
+        await chrome.runtime.sendMessage({type: "Connect", data: {vm_data: vmData}});
     }, [chatGPTOnly, vmData])
 
     return (

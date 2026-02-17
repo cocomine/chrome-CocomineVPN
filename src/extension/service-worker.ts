@@ -328,6 +328,7 @@ async function disconnect(): Promise<VMInstanceDataType | undefined> {
     const vmData = stored.vmData;
 
     // Clear proxy settings and stored VM data
+    clearInterval(pingInterval)
     await chrome.proxy.settings.clear({});
     await chrome.storage.local.remove('vmData');
     await chrome.notifications.clear('disconnectedNotify');
