@@ -59,7 +59,7 @@ const BlackWhiteList = () => {
 
         // reconnect with the new mode
         if (vmData === null) return;
-        await chrome.runtime.sendMessage({type: "Connect", data: vmData});
+        await chrome.runtime.sendMessage({type: "Connect", data: {vm_data: vmData}});
     }, [vmData])
 
     /* handle add event */
@@ -161,10 +161,10 @@ const BlackWhiteList = () => {
  * This component allows users to select parts of a URL by clicking on them.
  * It highlights the parts of the URL based on hover and selection states.
  *
- * @param {URLSelectorProps} props - The properties for the URLSelector component.
- * @param {string} props.value - The URL value to be displayed and interacted with.
- * @param {function} props.onSelect - Callback function to handle the selection of a URL part.
- * @param {function} [props.onHover] - Optional callback function to handle hovering over a URL part.
+ * @param props - The properties for the URLSelector component.
+ * @param props.value - The URL value to be displayed and interacted with.
+ * @param props.onSelect - Callback function to handle the selection of a URL part.
+ * @param [props.onHover] - Optional callback function to handle hovering over a URL part.
  */
 const URLSelector: React.FC<URLSelectorProps> = ({value, onSelect, onHover}) => {
 
@@ -240,10 +240,10 @@ const URLSelector: React.FC<URLSelectorProps> = ({value, onSelect, onHover}) => 
  *
  * This component provides a modal dialog for adding URLs to either a whitelist or a blacklist.
  *
- * @param {AddURLModalProps} props - The properties for the AddURLModal component.
- * @param {boolean} props.show - Determines whether the modal is visible.
- * @param {function} props.onHide - Callback function to hide the modal.
- * @param {string} props.url - The URL to be added to the list.
+ * @param props - The properties for the AddURLModal component.
+ * @param props.show - Determines whether the modal is visible.
+ * @param props.onHide - Callback function to hide the modal.
+ * @param props.url - The URL to be added to the list.
  */
 const AddURLModal: React.FC<AddURLModalProps> = ({show, onHide, url}) => {
 
