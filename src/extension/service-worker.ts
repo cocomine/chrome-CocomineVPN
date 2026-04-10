@@ -173,7 +173,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
 
             // save https setting to session storage for background use
             if (message.data.setting) {
-                await chrome.storage.session.set({"https_setting": message.data.setting});
+                await chrome.storage.local.set({"https_setting": message.data.setting});
             }
 
             // every 1s, send request to /ping to check if the proxy is connected
@@ -275,7 +275,7 @@ chrome.webRequest.onAuthRequired.addListener(function (details, callbackFn) {
         }
 
         // get credentials from session storage
-        chrome.storage.session.get<StoredHTTPSCertData>(["https_setting"]).then((data) => {
+        chrome.storage.local.get<StoredHTTPSCertData>(["https_setting"]).then((data) => {
             // No HTTPS setting found
             if (!data.https_setting) {
                 console.error("No HTTPS setting found in session storage");
