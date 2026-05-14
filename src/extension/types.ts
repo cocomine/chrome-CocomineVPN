@@ -121,6 +121,7 @@ export type VMInstanceDataType = {
     readonly _country: VMCountryType;
     readonly _profiles: VPNProfileType[];
     readonly _provider: VMProviderType;
+    readonly _notExpire: boolean;
     _isPowerOn: boolean;
     readonly _readonly: ReadOnlyModeType;
     _expired: string | null;
