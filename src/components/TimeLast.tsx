@@ -42,7 +42,7 @@ export const TimeLast: React.FC<{ vmData: VMInstanceDataType }> = ({vmData}) => 
     useEffect(() => {
         setExpired(vmData._expired);
         setNotExpire(vmData._notExpire);
-    }, [vmData, vmData._expired, vmData._notExpire]);
+    }, [vmData._expired, vmData._notExpire]);
 
     return (
         <div className="section glow">
