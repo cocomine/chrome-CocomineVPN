@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(async ({reason}) => {
         await chrome.tabs.create({url: "https://github.com/cocomine/chrome-vpn/blob/master/README.md"});
     } else if (reason === "update") {
         console.log("Extension updated");
-        await chrome.tabs.create({url: "https://github.com/cocomine/chrome-vpn/blob/master/README.md#230"});
+        await chrome.tabs.create({url: "https://github.com/cocomine/chrome-vpn/blob/master/README.md#240"});
     }
     await chrome.storage.local.setAccessLevel({
         accessLevel: "TRUSTED_CONTEXTS"
@@ -308,15 +308,19 @@ async function createAlarms(vmData: VMInstanceDataType) {
     // starting 1 hour before expiration
     await chrome.alarms.clearAll();
     const expiresAt = new Date(vmData._expired ?? Date.now()).getTime();
-    await chrome.alarms.create("offline-time-check", {
-        periodInMinutes: 15,
-        when: expiresAt - 60 * 60 * 1000
-    });
-    // Set up an alarm to disconnect when expiration time is reached
-    // Note: This alarm will be created at the exact expiration time
-    await chrome.alarms.create("offline-time-reached", {
-        when: expiresAt
-    });
+
+    // if vm can expire, set alarms
+    if (!vmData._notExpire){
+        await chrome.alarms.create("offline-time-check", {
+            periodInMinutes: 15,
+            when: expiresAt - 60 * 60 * 1000
+        });
+        // Set up an alarm to disconnect when expiration time is reached
+        // Note: This alarm will be created at the exact expiration time
+        await chrome.alarms.create("offline-time-reached", {
+            when: expiresAt
+        });
+    }
     // Set up a heartbeat alarm every 60 minutes
     await chrome.alarms.create("heartbeat", {
         periodInMinutes: 60,
