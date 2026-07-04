@@ -212,8 +212,9 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResp
                     // Ping failed, increment tryCount and check if we should stop trying
                     console.log("Ping attempt failed, retrying...", e);
                     tryCount++;
-                    if (tryCount > 60) {
+                    if (tryCount >= 60) {
                         clearInterval(pingInterval);
+                        await chrome.storage.local.remove("vmData");
                         await chrome.proxy.settings.clear({});
                         sendResponse({connected: false});
                     }

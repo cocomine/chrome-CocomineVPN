@@ -34,13 +34,18 @@ export const LinkStatus: React.FC<{
 
     // flag image element for menu item (memoized) (only update when data._country is changed)
     const flag = useMemo(() => {
+        if (!connected) {
+            return <img src={dislink} alt="Disconnect" className="flag"
+                        style={{padding: "1.5rem", overflow: 'visible'}} draggable={false}/>;
+        }
+
         switch (country) {
             case "TW":
                 return <img src={tw_flag} alt="TW Flag" className="flag fit-left" draggable={false}/>;
             case "JP":
                 return <img src={jp_flag} alt="JP Flag" className="flag" draggable={false}/>;
             case "US":
-                return <img src={us_flag} alt="JP Flag" className="flag fit-left" draggable={false}/>;
+                return <img src={us_flag} alt="US Flag" className="flag fit-left" draggable={false}/>;
             case "HK":
                 return <img src={hk_flag} alt="HK Flag" className="flag" draggable={false}/>;
             case "UK":
@@ -53,7 +58,7 @@ export const LinkStatus: React.FC<{
             default:
                 return <img src={link} alt="Connected" className="flag" draggable={false}/>;
         }
-    }, [country]);
+    }, [connected, country]);
 
     // toggle mouse enter event
     const onMouseEnter = useCallback(() => {
